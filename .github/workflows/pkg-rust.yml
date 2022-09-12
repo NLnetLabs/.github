@@ -874,6 +874,8 @@ jobs:
 
             ls -la target/generate-rpm/
             ;;
+
+            ls -la target/generate-rpm/
         esac
 
     # See what O/S specific linting tools think of our package.
@@ -1181,7 +1183,7 @@ jobs:
             exit 1
           fi
 
-      - uses: docker/setup-qemu-action@v1
+      - uses: docker/setup-qemu-action@v2
         # Don't use QEmu for compiling, it's way too slow on GitHub Actions.
         # Only use it for making images that will contain prebuilt binaries.
         if: ${{ matrix.mode == 'copy' }}
