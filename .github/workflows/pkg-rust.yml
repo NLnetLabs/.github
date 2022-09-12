@@ -1188,7 +1188,7 @@ jobs:
         with:
           platforms: ${{ matrix.platform }}
 
-      - uses: docker/setup-buildx-action@v1
+      - uses: docker/setup-buildx-action@v2
 
       - name: Download cross compiled binaries
         if: ${{ matrix.mode == 'copy' }}
