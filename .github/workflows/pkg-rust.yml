@@ -358,7 +358,7 @@ jobs:
           fi
 
           if [[ ! -f ${{ inputs.rpm_scriptlets_path }} ]]; then
-            echo "::error::Workflow input '${{ inputs.rpm_scriptlets_path }}' must refer to a file in the Git checkout'
+            echo "::error::Workflow input '${{ inputs.rpm_scriptlets_path }}' must refer to a file in the Git checkout"
             exit 1
           fi
 
@@ -553,11 +553,11 @@ jobs:
         # Get the operating system and release name (e.g. ubuntu and xenial) from the image name (e.g. ubuntu:xenial) by
         # extracting only the parts before and after but not including the colon:
         IMAGE="${MATRIX_IMAGE}"
-        if [ "${MATRIX_OS}" != "" ]; then
+        if [[ "${MATRIX_OS}" != "" ]]; then
           IMAGE="${MATRIX_OS}"
         fi
 
-        if [[ ""${IMAGE}" == "" ]]; then
+        if [[ "${IMAGE}" == "" ]]; then
           echo "::error::Matrix variable 'os' must be non-empty if set in package_build_rules(_path)."
           exit 1
         fi
@@ -871,6 +871,8 @@ jobs:
                 --set-metadata "version=\"${PKG_APP_VER}\"" \
                 ${SCRIPTLETS} \
                 ${EXTRA_CARGO_GENERATE_RPM_ARGS}
+
+            ls -la target/generate-rpm/
             ;;
 
             ls -la target/generate-rpm/
@@ -1188,7 +1190,7 @@ jobs:
         with:
           platforms: ${{ matrix.platform }}
 
-      - uses: docker/setup-buildx-action@v1
+      - uses: docker/setup-buildx-action@v2
 
       - name: Download cross compiled binaries
         if: ${{ matrix.mode == 'copy' }}
@@ -1231,7 +1233,7 @@ jobs:
       # combined multi-arch image that lacks the architecture specific tag value extension and that will ONLY be
       # pushed if all architecture specific images build and (where supported) passt he sanity check below.
       - name: Build Docker image ${{ steps.gen.outputs.image_name }}
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           platforms: ${{ matrix.platform }}
@@ -1261,7 +1263,7 @@ jobs:
 
       - name: Publish image to Docker Hub
         if: contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           platforms: ${{ matrix.platform }}
