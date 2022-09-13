@@ -515,11 +515,11 @@ jobs:
         fi
 
     - name: Checkout repository
-      if: ${{ steps.verify.dummy == 'false' }}
+      if: ${{ steps.verify.dummy == 'true' }}
       uses: actions/checkout@v2
 
     - name: Cache cargo cross
-      if: ${{ steps.verify.dummy == 'false' }}
+      if: ${{ steps.verify.dummy == 'true' }}
       uses: actions/cache@v3
       with:
         path: |
@@ -528,7 +528,7 @@ jobs:
         key: ${{ matrix.target }}-cargo-cross
 
     - name: Cross compile
-      if: ${{ steps.verify.dummy == 'false' }}
+      if: ${{ steps.verify.dummy == 'true' }}
       uses: actions-rs/cargo@v1
       with:
         use-cross: true
@@ -536,7 +536,7 @@ jobs:
         args: --locked --release --target ${{ matrix.target }} ${{ inputs.cross_build_args }}
 
     - name: Tar the set of created binaries to upload
-      if: ${{ steps.verify.dummy == 'false' }}
+      if: ${{ steps.verify.dummy == 'true' }}
       run: |
         rm -f bins.tar
         find target/${{ matrix.target }}/release/ -maxdepth 1 -type f -executable | xargs tar vpcf bins.tar
@@ -548,7 +548,7 @@ jobs:
     # artifacts to be packaged by the scripts that upload to packages.nlnetlabs.nl we prefix the artifact name with
     # `tmp-` which will be ignored by packages.nlnetlabs.nl scripts.
     - name: Upload built binaries
-      if: ${{ steps.verify.dummy == 'false' }}
+      if: ${{ steps.verify.dummy == 'true' }}
       uses: actions/upload-artifact@v3
       with:
         name: tmp-cross-binaries-${{ matrix.target }}
