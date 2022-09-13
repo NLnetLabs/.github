@@ -365,7 +365,7 @@ jobs:
           fi
 
       - name: Verify Docker credentials
-        # TODO: if Docker enabled
+        if: ${{ inputs.docker_org != '' && inputs.docker_repo != '' }}
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_ID }}
