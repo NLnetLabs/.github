@@ -333,7 +333,7 @@ jobs:
           echo "============================================================================="
           JSON='${{ toJSON(fromJSON(steps.select_inputs.outputs.cross_build_rules)) }}'
           if [[ "${JSON}" != "[]" ]]; then
-            echo ${JSON}
+            echo -e ${JSON}
           else
             echo None
           fi
@@ -344,7 +344,7 @@ jobs:
           echo "============================================================================="
           JSON='${{ toJSON(fromJSON(steps.select_inputs.outputs.docker_build_rules)) }}'
           if [[ "${JSON}" != "{}" ]]; then
-            echo ${JSON}
+            echo -e ${JSON}
           else
             echo None
           fi
@@ -355,7 +355,7 @@ jobs:
           echo "============================================================================="
           JSON='${{ toJSON(fromJSON(steps.select_inputs.outputs.package_build_rules)) }}'
           if [[ "${JSON}" != "{}" ]]; then
-            echo ${JSON}
+            echo -e ${JSON}
           else
             echo None
           fi
@@ -366,7 +366,7 @@ jobs:
           echo "============================================================================="
           JSON='${{ toJSON(fromJSON(steps.select_inputs.outputs.package_test_rules)) }}'
           if [[ "${JSON}" != "{}" ]]; then
-            echo ${JSON}
+            echo -e ${JSON}
           else
             echo None
           fi
