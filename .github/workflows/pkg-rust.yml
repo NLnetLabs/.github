@@ -326,7 +326,7 @@ jobs:
 
       - name: Print the loaded rules
         # Disable default use of bash -x for easier to read output in the log
-        shell: sh
+        shell: bash
         run: |
           echo "============================================================================="
           echo "Cross build rules:"
