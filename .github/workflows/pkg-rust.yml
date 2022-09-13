@@ -1150,6 +1150,7 @@ jobs:
   # NOTE: If you extend the set of matrix includes in this job you must also extend the call to docker manifest create
   # in the docker-manifest job below.
   docker:
+    if: ${{ inputs.docker_org != '' && inputs.docker_repo != '' }}
     needs: [cross, prepare]
     runs-on: ubuntu-20.04
     strategy:
