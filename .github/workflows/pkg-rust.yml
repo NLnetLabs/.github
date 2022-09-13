@@ -380,12 +380,24 @@ jobs:
           fi
 
           if [[ ! -f ${{ inputs.rpm_scriptlets_path }} ]]; then
-            echo "::error::Workflow input '${{ inputs.rpm_scriptlets_path }}' must refer to a file in the Git checkout"
+            echo "::error::Workflow input 'rpm_scriptlets_path' ('${{ inputs.rpm_scriptlets_path }}') must refer to a file in the Git checkout"
             exit 1
           fi
 
+          if [[ "${{ steps.select_inputs.outputs.docker_build_rules }}" != '{}' ]]; then
+            if [[ "${{ inputs.docker_org }}" == "" ]]; then
+              echo "::error::Workflow input 'docker_org' must be non-empty when 'docker_build_rules' are supplied."
+              exit 1
+            fi
+
+            if [[ "${{ inputs.docker_repo }}" == "" ]]; then
+              echo "::error::Workflow input 'docker_repo' must be non-empty when 'docker_build_rules' are supplied."
+              exit 1
+            fi
+          fi
+
       - name: Verify Docker credentials
-        if: ${{ inputs.docker_org != '' && inputs.docker_repo != '' }}
+        if: ${{ steps.select_inputs.outputs.docker_build_rules != '{}' }}
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_ID }}
@@ -1173,7 +1185,7 @@ jobs:
   # NOTE: If you extend the set of matrix includes in this job you must also extend the call to docker manifest create
   # in the docker-manifest job below.
   docker:
-    if: ${{ inputs.docker_org != '' && inputs.docker_repo != '' && needs.prepare.outputs.docker_build_rules != '{}' }}
+    if: ${{ needs.prepare.outputs.docker_build_rules != '{}' }}
     needs: [cross, prepare]
     runs-on: ubuntu-20.04
     strategy:
@@ -1234,14 +1246,12 @@ jobs:
           rm dockerbin/${{ matrix.platform }}/bins.tar
 
       - name: Log into Docker Hub
-        if: ${{ inputs.docker_org != '' && inputs.docker_repo != '' }}
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_HUB_ID }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Generate architecture specific Docker image name
-        if: ${{ inputs.docker_org != '' && inputs.docker_repo != '' }}
         id: gen
         run: |
           # Use the [0]the tag, i.e. `<repo>:unstable`, `<repo>:test` or `<repo>:v0.1.2`.
@@ -1308,7 +1318,7 @@ jobs:
   # Logs in to Docker Hub using secrets configured in this GitHub repository.
   docker-manifest:
     needs: [prepare, docker]
-    if: ${{ inputs.docker_org != '' && inputs.docker_repo != '' && contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' && needs.prepare.outputs.docker_build_rules != '{}' }}
+    if: ${{ contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' && needs.prepare.outputs.docker_build_rules != '{}' }}
     runs-on: ubuntu-20.04
     steps:
       - name: Log into Docker Hub
