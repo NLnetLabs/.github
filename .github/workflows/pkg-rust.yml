@@ -499,7 +499,7 @@ jobs:
   #
   # See: https://github.com/rust-embedded/cross#docker-in-docker
   cross:
-    if: ${{ needs.prepare.outputs.cross_build_rules != '[]' }}
+    # if: ${{ needs.prepare.outputs.cross_build_rules != '[]' }}
     needs: prepare
     runs-on: ubuntu-20.04
     strategy:
