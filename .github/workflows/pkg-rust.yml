@@ -133,7 +133,7 @@ on:
         description: "A JSON array of cross-compilation targets, e.g. [ 'arm-unknown-linux-musleabihf', 'armv7-unknown-linux-musleabihf' ]"
         required: false
         type: string
-        default: '[]'
+        default: '["dummy"]'
       cross_build_rules_path:
         description: "A relative path within the repository clone to a file containing a `cross_rules` array in YAML format. Each item in the array must be one of: https://github.com/cross-rs/cross#supported-targets"
         required: false
@@ -333,7 +333,7 @@ jobs:
           echo "Cross build rules:"
           echo "============================================================================="
           JSON='${{ toJSON(fromJSON(steps.select_inputs.outputs.cross_build_rules)) }}'
-          if [[ "${JSON}" != "[]" ]]; then
+          if [[ "${JSON}" != "[]" && "${JSON}" != '["dummy"]' ]]; then
             echo ${JSON} | jq
           else
             echo None
@@ -499,17 +499,27 @@ jobs:
   #
   # See: https://github.com/rust-embedded/cross#docker-in-docker
   cross:
-    if: ${{ needs.prepare.outputs.cross_build_rules != '[]' }}
     needs: prepare
     runs-on: ubuntu-20.04
     strategy:
       matrix:
         target: ${{ fromJSON(needs.prepare.outputs.cross_build_rules) }}
     steps:
+    - name: Verify inputs
+      id: verify
+      run: |
+        if [[ "${{ matrix.target}" == "dummy" ]]; then
+          echo "::set-output name=dummy::true"
+        else
+          echo "::set-output name=dummy::false"
+        fi
+
     - name: Checkout repository
+      if: ${{ steps.verify.dummy == 'false' }}
       uses: actions/checkout@v2
 
     - name: Cache cargo cross
+      if: ${{ steps.verify.dummy == 'false' }}
       uses: actions/cache@v3
       with:
         path: |
@@ -518,6 +528,7 @@ jobs:
         key: ${{ matrix.target }}-cargo-cross
 
     - name: Cross compile
+      if: ${{ steps.verify.dummy == 'false' }}
       uses: actions-rs/cargo@v1
       with:
         use-cross: true
@@ -525,6 +536,7 @@ jobs:
         args: --locked --release --target ${{ matrix.target }} ${{ inputs.cross_build_args }}
 
     - name: Tar the set of created binaries to upload
+      if: ${{ steps.verify.dummy == 'false' }}
       run: |
         rm -f bins.tar
         find target/${{ matrix.target }}/release/ -maxdepth 1 -type f -executable | xargs tar vpcf bins.tar
@@ -536,15 +548,11 @@ jobs:
     # artifacts to be packaged by the scripts that upload to packages.nlnetlabs.nl we prefix the artifact name with
     # `tmp-` which will be ignored by packages.nlnetlabs.nl scripts.
     - name: Upload built binaries
+      if: ${{ steps.verify.dummy == 'false' }}
       uses: actions/upload-artifact@v3
       with:
         name: tmp-cross-binaries-${{ matrix.target }}
         path: bins.tar
-
-  cross-bridge:
-    if: ${{ always() }}
-    needs: cross
-    runs-on: ubuntu-20.04
 
   # -------------------------------------------------------------------------------------------------------------------
   # Job: 'pkg'
@@ -555,7 +563,7 @@ jobs:
   #   - https://github.com/cat-in-136/cargo-generate-rpm
   pkg:
     if: ${{ needs.prepare.outputs.package_build_rules != '{}' }}
-    needs: [cross-bridge, prepare]
+    needs: [cross, prepare]
     runs-on: ubuntu-latest
     # Build on the platform we are targeting in order to avoid https://github.com/rust-lang/rust/issues/57497.
     # Specifying container causes all of the steps in this job to run inside a Docker container (which is why the
@@ -1199,7 +1207,7 @@ jobs:
   # in the docker-manifest job below.
   docker:
     if: ${{ needs.prepare.outputs.docker_build_rules != '{}' }}
-    needs: [cross-bridge, prepare]
+    needs: [cross, prepare]
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
