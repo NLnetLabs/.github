@@ -508,7 +508,7 @@ jobs:
     - name: Verify inputs
       id: verify
       run: |
-        if [[ "${{ matrix.target}" == "dummy" ]]; then
+        if [[ "${{ matrix.target }}" == "dummy" ]]; then
           echo "::set-output name=dummy::true"
         else
           echo "::set-output name=dummy::false"
