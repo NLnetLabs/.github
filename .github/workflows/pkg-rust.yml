@@ -331,25 +331,41 @@ jobs:
           echo "============================================================================="
           echo "Cross build rules:"
           echo "============================================================================="
-          echo '${{ toJSON(fromJSON(steps.select_inputs.outputs.cross_build_rules)) }}'
+          if [[ "${{ steps.select_inputs.outputs.cross_build_rules }}" != "" ]]; then
+            echo '${{ toJSON(fromJSON(steps.select_inputs.outputs.cross_build_rules)) }}'
+          else
+            echo None
+          fi
 
           echo
           echo "============================================================================="
           echo "Docker build rules:"
           echo "============================================================================="
-          echo '${{ toJSON(fromJSON(steps.select_inputs.outputs.docker_build_rules)) }}'
+          if [[ "${{ steps.select_inputs.outputs.docker_build_rules }}" != "" ]]; then
+            echo '${{ toJSON(fromJSON(steps.select_inputs.outputs.docker_build_rules)) }}'
+          else
+            echo None
+          fi
 
           echo
           echo "============================================================================="
           echo "Package build rules:"
           echo "============================================================================="
-          echo '${{ toJSON(fromJSON(steps.select_inputs.outputs.package_build_rules)) }}'
+          if [[ "${{ steps.select_inputs.outputs.package_build_rules }}" != "" ]]; then
+            echo '${{ toJSON(fromJSON(steps.select_inputs.outputs.package_build_rules)) }}'
+          else
+            echo None
+          fi
 
           echo
           echo "============================================================================="
           echo "Packages test rules:"
           echo "============================================================================="
-          echo '${{ toJSON(fromJSON(steps.select_inputs.outputs.package_test_rules)) }}'
+          if [[ "${{ steps.select_inputs.outputs.package_test_rules }}" != "" ]]; then
+            echo '${{ toJSON(fromJSON(steps.select_inputs.outputs.package_test_rules)) }}'
+          else
+            echo None
+          fi
 
       - name: Verify inputs
         if: ${{ inputs.rpm_scriptlets_path != '' }}
