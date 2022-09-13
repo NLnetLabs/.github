@@ -177,7 +177,7 @@ on:
         description: "A GitHub Actions matrix in JSON format with platform, shortname, crosstarget (required if mode is copy), mode (optional: build or copy) and cargo_args (optional) fields."
         required: false
         type: string
-        default: ''
+        default: '{}'
       docker_build_rules_path:
         description: "A relative path within the repository clone to a file containing a `docker_build_rules` matrix in YAML format."
         required: false
