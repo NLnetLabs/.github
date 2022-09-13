@@ -300,25 +300,25 @@ jobs:
       - name: Prefer inline rules over loaded rules
         id: select_inputs
         run: |
-          if [[ "${{ inputs.cross_build_rules }}" != "" ]]; then
+          if [[ "${{ inputs.cross_build_rules }}" != "[]" ]]; then
             echo '::set-output name=cross_build_rules::${{ inputs.cross_build_rules }}'
           else
             echo '::set-output name=cross_build_rules::${{ steps.transform_cross_build_rules_file.outputs.data }}'
           fi
 
-          if [[ "${{ inputs.docker_build_rules }}" != "" ]]; then
+          if [[ "${{ inputs.docker_build_rules }}" != "{}" ]]; then
             echo '::set-output name=docker_build_rules::${{ inputs.docker_build_rules }}'
           else
             echo '::set-output name=docker_build_rules::${{ steps.transform_docker_build_rules_file.outputs.data }}'
           fi
 
-          if [[ "${{ inputs.package_build_rules }}" != "" ]]; then
+          if [[ "${{ inputs.package_build_rules }}" != "{}" ]]; then
             echo '::set-output name=package_build_rules::${{ inputs.package_build_rules }}'
           else
             echo '::set-output name=package_build_rules::${{ steps.transform_package_build_rules_file.outputs.data }}'
           fi
 
-          if [[ "${{ inputs.package_test_rules }}" != "" ]]; then
+          if [[ "${{ inputs.package_test_rules }}" != "{}" ]]; then
             echo '::set-output name=package_test_rules::${{ inputs.package_test_rules }}'
           else
             echo '::set-output name=package_test_rules::${{ steps.transform_package_test_rules_file.outputs.data }}'
