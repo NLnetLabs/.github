@@ -297,7 +297,7 @@ jobs:
           from: yaml
           to: json
 
-      - name: Prefer inline rules over loaded rules
+      - name: Prefer loaded rules over inline rules
         id: select_inputs
         run: |
           if [[ "${{ inputs.cross_build_rules_path }}" != "" ]]; then
