@@ -196,8 +196,9 @@ on:
         default: ''
       deb_maintainer:
         description: "The name and email address of the Debian package maintainers, e.g. `The NLnet Labs RPKI Team <rpki@nlnetlabs.nl>`."
-        required: true
+        required: false
         type: string
+        default: ''
 
       cross_build_args:
         description: "Extra arguments to cargo build when cross-compiling, e.g. `--features static-openssl`."
@@ -392,6 +393,13 @@ jobs:
 
             if [[ "${{ inputs.docker_repo }}" == "" ]]; then
               echo "::error::Workflow input 'docker_repo' must be non-empty when 'docker_build_rules' are supplied."
+              exit 1
+            fi
+          fi
+
+          if [[ "${{ steps.select_inputs.outputs.package_build_rules }}" != '{}' ]]; then
+            if [[ "${{ inputs.deb_maintainer }}" == "" ]]; then
+              echo "::error::Workflow input 'deb_maintainer' must be non-empty when 'package_build_rules' are supplied."
               exit 1
             fi
           fi
