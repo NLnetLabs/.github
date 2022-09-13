@@ -166,11 +166,13 @@ on:
       #   - The Tag would be v0.1.2-arm64
       # Collectively I refer to the combination of <org>/<repo>:<tag> as the 'image' name,
       docker_org:
-        required: true
+        required: false
         type: string
+        default: ''
       docker_repo:
-        required: true
+        required: false
         type: string
+        default: false
       docker_build_rules:
         description: "A GitHub Actions matrix in JSON format with platform, shortname, crosstarget (required if mode is copy), mode (optional: build or copy) and cargo_args (optional) fields."
         required: false
@@ -587,7 +589,7 @@ jobs:
     # Allow CentOS 8 to continue working now that it is EOL
     # See: https://stackoverflow.com/a/70930049
     - name: CentOS 8 EOL workaround
-      if: matrix.image == 'centos:8'
+      if: ${{ matrix.image == 'centos:8' }}
       run: |
         sed -i -e 's|mirrorlist=|#mirrorlist=|g' -e 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*
 
@@ -649,7 +651,7 @@ jobs:
 
     # Only install cargo-deb or cargo-generate-rpm if not already fetched from the cache.
     - name: Install Cargo Deb if needed
-      if: steps.cache-cargo-deb.outputs.cache-hit != 'true'
+      if: ${{ steps.cache-cargo-deb.outputs.cache-hit != 'true' }}
       run: |
         case ${OS_NAME} in
           debian|ubuntu)
@@ -668,7 +670,7 @@ jobs:
         esac
 
     - name: Install Cargo Generate RPM if needed
-      if: steps.cache-cargo-generate-rpm.outputs.cache-hit != 'true'
+      if: ${{ steps.cache-cargo-generate-rpm.outputs.cache-hit != 'true' }}
       run: |
         case ${OS_NAME} in
           centos)
@@ -1208,12 +1210,14 @@ jobs:
           rm dockerbin/${{ matrix.platform }}/bins.tar
 
       - name: Log into Docker Hub
+        if: ${{ inputs.docker_org != '' && inputs.docker_repo != '' }}
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_HUB_ID }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Generate architecture specific Docker image name
+        if: ${{ inputs.docker_org != '' && inputs.docker_repo != '' }}
         id: gen
         run: |
           # Use the [0]the tag, i.e. `<repo>:unstable`, `<repo>:test` or `<repo>:v0.1.2`.
@@ -1260,7 +1264,7 @@ jobs:
           path: /tmp/docker-${{ matrix.shortname }}-img.tar
 
       - name: Publish image to Docker Hub
-        if: contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
+        if: ${{ contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' }}
         uses: docker/build-push-action@v3
         with:
           context: .
@@ -1280,7 +1284,7 @@ jobs:
   # Logs in to Docker Hub using secrets configured in this GitHub repository.
   docker-manifest:
     needs: [prepare, docker]
-    if: contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
+    if: ${{ inputs.docker_org != '' && inputs.docker_repo != '' && contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-20.04
     steps:
       - name: Log into Docker Hub
