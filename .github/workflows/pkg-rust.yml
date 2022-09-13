@@ -248,7 +248,7 @@ jobs:
   # -------------------------------------------------------------------------------------------------------------------
   # Validate and pre-process inputs.
   prepare:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     outputs:
       all_repo_and_tag_pairs: ${{ steps.encode.outputs.all_repo_and_tag_pairs }}
       first_repo_and_tag_pair: ${{ steps.encode.outputs.first_repo_and_tag_pair }}
@@ -333,7 +333,7 @@ jobs:
           echo "============================================================================="
           JSON='${{ toJSON(fromJSON(steps.select_inputs.outputs.cross_build_rules)) }}'
           if [[ "${JSON}" != "[]" ]]; then
-            echo ${JSON}
+            echo ${JSON} | jq
           else
             echo None
           fi
@@ -344,7 +344,7 @@ jobs:
           echo "============================================================================="
           JSON='${{ toJSON(fromJSON(steps.select_inputs.outputs.docker_build_rules)) }}'
           if [[ "${JSON}" != "{}" ]]; then
-            echo ${JSON}
+            echo ${JSON} | jq
           else
             echo None
           fi
@@ -353,9 +353,9 @@ jobs:
           echo "============================================================================="
           echo "Package build rules:"
           echo "============================================================================="
-          JSON="${{ toJSON(fromJSON(steps.select_inputs.outputs.package_build_rules)) }}"
+          JSON='${{ toJSON(fromJSON(steps.select_inputs.outputs.package_build_rules)) }}'
           if [[ "${JSON}" != "{}" ]]; then
-            echo ${JSON}
+            echo ${JSON} | jq
           else
             echo None
           fi
@@ -366,7 +366,7 @@ jobs:
           echo "============================================================================="
           JSON='${{ toJSON(fromJSON(steps.select_inputs.outputs.package_test_rules)) }}'
           if [[ "${JSON}" != "{}" ]]; then
-            echo ${JSON}
+            echo ${JSON} | jq
           else
             echo None
           fi
