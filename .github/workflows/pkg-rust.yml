@@ -880,9 +880,9 @@ jobs:
             # Patch the generated DEB to have ./ paths compatible with `unattended-upgrade`:
             pushd target/debian
             DEB_FILE_NAME=$(ls -1 *.deb | head -n 1)
-            tar tf ${DEB_FILE_NAME}
             DATA_ARCHIVE=$(ar t ${DEB_FILE_NAME} | grep -E '^data\.tar')
             ar x ${DEB_FILE_NAME} ${DATA_ARCHIVE}
+            tar tf ${DATA_ARCHIVE}
             EXTRA_TAR_ARGS=
             if [[ "${DATA_ARCHIVE}" == *.xz ]]; then
               # Install XZ support that will be needed by TAR
@@ -894,8 +894,8 @@ jobs:
             pushd tar-hack
             tar c${EXTRA_TAR_ARGS}f ../${DATA_ARCHIVE} ./*
             popd
+            tar tf ${DATA_ARCHIVE}
             ar r ${DEB_FILE_NAME} ${DATA_ARCHIVE}
-            tar tf ${DEB_FILE_NAME}
 
             ls -la target/debian/
             ;;
