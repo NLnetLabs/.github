@@ -679,7 +679,7 @@ jobs:
       run: |
         case ${OS_NAME} in
           debian|ubuntu)
-            apt-get install -y build-essential jq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
+            apt-get install -y binutils build-essential jq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
             ;;
           centos)
             yum install epel-release -y
@@ -875,6 +875,28 @@ jobs:
             rm -f target/debian/*.deb
 
             cargo deb --deb-version ${DEB_VER} ${OPT_VARIANT_ARG} -v ${EXTRA_CARGO_DEB_ARGS} -- --locked ${EXTRA_BUILD_ARGS}
+
+            # https://github.com/NLnetLabs/routinator/issues/783
+            # Patch the generated DEB to have ./ paths compatible with `unattended-upgrade`:
+            pushd target/debian
+            DEB_FILE_NAME=$(ls -1 *.deb | head -n 1)
+            DATA_ARCHIVE=$(ar t ${DEB_FILE_NAME} | grep -E '^data\.tar')
+            ar x ${DEB_FILE_NAME} ${DATA_ARCHIVE}
+            tar tf ${DATA_ARCHIVE}
+            EXTRA_TAR_ARGS=
+            if [[ "${DATA_ARCHIVE}" == *.xz ]]; then
+              # Install XZ support that will be needed by TAR
+              apt install -y xz-utils
+              EXTRA_TAR_ARGS=J
+            fi
+            mkdir tar-hack
+            tar -C tar-hack -xf ${DATA_ARCHIVE}
+            pushd tar-hack
+            tar c${EXTRA_TAR_ARGS}f ../${DATA_ARCHIVE} ./*
+            popd
+            tar tf ${DATA_ARCHIVE}
+            ar r ${DEB_FILE_NAME} ${DATA_ARCHIVE}
+            popd
 
             ls -la target/debian/
             ;;
