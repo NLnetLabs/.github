@@ -896,6 +896,7 @@ jobs:
             popd
             tar tf ${DATA_ARCHIVE}
             ar r ${DEB_FILE_NAME} ${DATA_ARCHIVE}
+            popd
 
             ls -la target/debian/
             ;;
