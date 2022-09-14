@@ -1136,7 +1136,7 @@ jobs:
             CONFIFILE_LIST_FILE="/var/lib/dpkg/info/${{ matrix.pkg }}.conffiles"
 
             # append a line break to the conffile
-            for F in $(sg lxd -c "lxc exec testcon -- cat ${CONFIFILE_LIST_FILE}); do
+            for F in $(sg lxd -c "lxc exec testcon -- cat ${CONFIFILE_LIST_FILE}"); do
               sg lxd -c "lxc exec testcon -- sh -c \"echo >> $F\""
             done
 
