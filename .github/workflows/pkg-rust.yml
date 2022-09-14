@@ -254,10 +254,10 @@ jobs:
       all_repo_and_tag_pairs: ${{ steps.encode.outputs.all_repo_and_tag_pairs }}
       first_repo_and_tag_pair: ${{ steps.encode.outputs.first_repo_and_tag_pair }}
       lower_docker_org: ${{ steps.encode.outputs.lower_docker_org }}
-      cross_build_rules: ${{ steps.select_inputs.outputs.cross_build_rules }}
-      docker_build_rules: ${{ steps.select_inputs.outputs.docker_build_rules }}
-      package_build_rules: ${{ steps.select_inputs.outputs.package_build_rules }}
-      package_test_rules: ${{ steps.select_inputs.outputs.package_test_rules }}
+      cross_build_rules: ${{ steps.pre_process_rules.outputs.cross_build_rules }}
+      docker_build_rules: ${{ steps.pre_process_rules.outputs.docker_build_rules }}
+      package_build_rules: ${{ steps.pre_process_rules.outputs.package_build_rules }}
+      package_test_rules: ${{ steps.pre_process_rules.outputs.package_test_rules }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -298,8 +298,8 @@ jobs:
           from: yaml
           to: json
 
-      - name: Prefer loaded rules over inline rules
-        id: select_inputs
+      - name: Pre-process rule inputs
+        id: pre_process_rules
         run: |
           if [[ "${{ inputs.cross_build_rules_path }}" != "" ]]; then
             echo '::set-output name=cross_build_rules::${{ steps.transform_cross_build_rules_file.outputs.data }}'
@@ -338,7 +338,7 @@ jobs:
           echo "============================================================================="
           echo "Cross build rules:"
           echo "============================================================================="
-          JSON='${{ toJSON(fromJSON(steps.select_inputs.outputs.cross_build_rules)) }}'
+          JSON='${{ toJSON(fromJSON(steps.pre_process_rules.outputs.cross_build_rules)) }}'
           if [[ "${JSON}" != "[]" && "${JSON}" != '["no-cross"]' ]]; then
             echo ${JSON} | jq
           else
@@ -349,7 +349,7 @@ jobs:
           echo "============================================================================="
           echo "Docker build rules:"
           echo "============================================================================="
-          JSON='${{ toJSON(fromJSON(steps.select_inputs.outputs.docker_build_rules)) }}'
+          JSON='${{ toJSON(fromJSON(steps.pre_process_rules.outputs.docker_build_rules)) }}'
           if [[ "${JSON}" != "{}" ]]; then
             echo ${JSON} | jq
           else
@@ -360,7 +360,7 @@ jobs:
           echo "============================================================================="
           echo "Package build rules:"
           echo "============================================================================="
-          JSON='${{ toJSON(fromJSON(steps.select_inputs.outputs.package_build_rules)) }}'
+          JSON='${{ toJSON(fromJSON(steps.pre_process_rules.outputs.package_build_rules)) }}'
           if [[ "${JSON}" != "{}" ]]; then
             echo ${JSON} | jq
           else
@@ -371,7 +371,7 @@ jobs:
           echo "============================================================================="
           echo "Packages test rules:"
           echo "============================================================================="
-          JSON='${{ toJSON(fromJSON(steps.select_inputs.outputs.package_test_rules)) }}'
+          JSON='${{ toJSON(fromJSON(steps.pre_process_rules.outputs.package_test_rules)) }}'
           if [[ "${JSON}" != "{}" ]]; then
             echo ${JSON} | jq
           else
@@ -391,7 +391,7 @@ jobs:
             exit 1
           fi
 
-          if [[ "${{ steps.select_inputs.outputs.docker_build_rules }}" != '{}' ]]; then
+          if [[ "${{ steps.pre_process_rules.outputs.docker_build_rules }}" != '{}' ]]; then
             if [[ "${{ inputs.docker_org }}" == "" ]]; then
               echo "::error::Workflow input 'docker_org' must be non-empty when 'docker_build_rules' are supplied."
               exit 1
@@ -403,7 +403,7 @@ jobs:
             fi
           fi
 
-          if [[ "${{ steps.select_inputs.outputs.package_build_rules }}" != '{}' ]]; then
+          if [[ "${{ steps.pre_process_rules.outputs.package_build_rules }}" != '{}' ]]; then
             if [[ "${{ inputs.deb_maintainer }}" == "" ]]; then
               echo "::error::Workflow input 'deb_maintainer' must be non-empty when 'package_build_rules' are supplied."
               exit 1
@@ -411,7 +411,7 @@ jobs:
           fi
 
       - name: Verify Docker credentials
-        if: ${{ steps.select_inputs.outputs.docker_build_rules != '{}' }}
+        if: ${{ steps.pre_process_rules.outputs.docker_build_rules != '{}' }}
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_ID }}
