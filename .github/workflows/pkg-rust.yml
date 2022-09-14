@@ -320,10 +320,14 @@ jobs:
           fi
 
           if [[ "${{ inputs.package_test_rules_path }}" != "" ]]; then
-            echo '::set-output name=package_test_rules::${{ steps.transform_package_test_rules_file.outputs.data }}'
+            JSON='${{ steps.transform_package_test_rules_file.outputs.data }}'
           else
-            echo '::set-output name=package_test_rules::${{ inputs.package_test_rules }}'
+            JSON='${{ inputs.package_test_rules }}'
           fi
+
+          # Exclude debian:stretch because the LXC image is no longer available
+          JSON=$(echo ${JSON} | jq 'del(.image[] | select(. == "debian:stretch"))' | jq -c)
+          echo '::set-output name=package_test_rules::${JSON}'
 
       - name: Print the loaded rules
         # Disable default use of bash -x for easier to read output in the log
@@ -368,8 +372,6 @@ jobs:
 
           JSON='${{ toJSON(fromJSON(steps.select_inputs.outputs.package_test_rules)) }}'
           if [[ "${JSON}" != "{}" ]]; then
-            # Exclude debian:stretch because the LXC image is no longer available
-            JSON=$(echo ${JSON} | jq 'del(.image[] | select(. == "debian:stretch"))' | jq -c)
             echo ${JSON} | jq
           else
             echo None
