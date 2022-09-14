@@ -298,7 +298,7 @@ jobs:
           from: yaml
           to: json
 
-      - name: Pre-process rule inputs
+      - name: Pre-process rules
         id: pre_process_rules
         run: |
           if [[ "${{ inputs.cross_build_rules_path }}" != "" ]]; then
@@ -331,7 +331,7 @@ jobs:
           fi
           echo "::set-output name=package_test_rules::${JSON}"
 
-      - name: Print the loaded rules
+      - name: Print rules
         # Disable default use of bash -x for easier to read output in the log
         shell: bash
         run: |
