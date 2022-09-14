@@ -1193,7 +1193,7 @@ jobs:
         case ${OS_NAME} in
           debian|ubuntu)
             SAVED_MD5SUMS="/tmp/${{ matrix.pkg }}-conffiles.md5"
-            md5sum -c ${SAVED_MD5SUMS}
+            sg lxd -c "lxc exec testcon -- md5sum -c ${SAVED_MD5SUMS}"
             ;;
           centos)
             ;;
