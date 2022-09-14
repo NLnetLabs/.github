@@ -327,7 +327,7 @@ jobs:
 
           # Exclude debian:stretch because the LXC image is no longer available
           JSON=$(echo ${JSON} | jq 'del(.image[] | select(. == "debian:stretch"))' | jq -c)
-          echo '::set-output name=package_test_rules::${JSON}'
+          echo "::set-output name=package_test_rules::${JSON}"
 
       - name: Print the loaded rules
         # Disable default use of bash -x for easier to read output in the log
@@ -369,7 +369,6 @@ jobs:
           echo "============================================================================="
           echo "Packages test rules:"
           echo "============================================================================="
-
           JSON='${{ toJSON(fromJSON(steps.select_inputs.outputs.package_test_rules)) }}'
           if [[ "${JSON}" != "{}" ]]; then
             echo ${JSON} | jq
