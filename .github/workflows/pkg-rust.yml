@@ -1141,7 +1141,7 @@ jobs:
             done
 
             # save the md5 checksums for later comparison
-            sg lxd -c "lxc exec testcon -- sh -c \"xargs ${CONFIFILE_LIST_FILE} md5sum > ${SAVED_MD5SUMS}\""
+            sg lxd -c "lxc exec testcon -- sh -c \"xargs -a ${CONFIFILE_LIST_FILE} md5sum > ${SAVED_MD5SUMS}\""
             sg lxd -c "lxc exec testcon -- cat ${SAVED_MD5SUMS}"
             ;;
           centos)
