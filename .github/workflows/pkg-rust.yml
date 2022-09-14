@@ -326,7 +326,9 @@ jobs:
           fi
 
           # Exclude debian:stretch because the LXC image is no longer available
-          JSON=$(echo ${JSON} | jq 'del(.image[] | select(. == "debian:stretch"))' | jq -c)
+          if [[ "${JSON}" != "{}" ]]; then
+            JSON=$(echo ${JSON} | jq 'del(.image[] | select(. == "debian:stretch"))' | jq -c)
+          fi
           echo "::set-output name=package_test_rules::${JSON}"
 
       - name: Print the loaded rules
