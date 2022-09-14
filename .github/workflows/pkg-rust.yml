@@ -327,7 +327,12 @@ jobs:
 
           # Exclude debian:stretch because the LXC image is no longer available
           if [[ "${JSON}" != "{}" ]]; then
-            JSON=$(echo ${JSON} | jq 'del(.image[] | select(. == "debian:stretch"))' | jq -c)
+            CONTROL_JSON=$(echo ${JSON} | jq 'del(.image[] | select(. == "i-dont-exist"))' | jq -c)
+            MODIFIED_JSON=$(echo ${JSON} | jq 'del(.image[] | select(. == "debian:stretch"))' | jq -c)
+            if [[ "${CONTROL_JSON}" != "${MODIFIED_JSON}" ]]; then
+              echo "::warning::Removed debian:stretch from package_test_rules because the LXC image no longer exists"
+              JSON="${MODIFIED_JSON}"
+            fi
           fi
           echo "::set-output name=package_test_rules::${JSON}"
 
