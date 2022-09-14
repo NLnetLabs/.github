@@ -1376,7 +1376,7 @@ jobs:
         run: |
           LOWER_DOCKER_ORG="${{ steps.decode.outputs.lower_docker_org }}"
 
-          ARCH_SHORT_NAMES=${{ join(fromJSON(needs.prepare.outputs.docker_build_rules).include.*.shortname, ' ') }}
+          ARCH_SHORT_NAMES="${{ join(fromJSON(needs.prepare.outputs.docker_build_rules).include.*.shortname, ' ') }}"
           REFERENCED_IMAGES=""
 
           # Imagine that we are invoked with two tags: v1.0.1 and latest
