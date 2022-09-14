@@ -365,7 +365,12 @@ jobs:
           echo "============================================================================="
           echo "Packages test rules:"
           echo "============================================================================="
+
           JSON='${{ toJSON(fromJSON(steps.select_inputs.outputs.package_test_rules)) }}'
+
+          # Exclude debian:stretch because the LXC image is no longer available
+          JSON=$(echo ${JSON} | jq -c '. + {exclude: { image: "debian:stretch" }}')
+
           if [[ "${JSON}" != "{}" ]]; then
             echo ${JSON} | jq
           else
