@@ -1434,7 +1434,7 @@ jobs:
           for REPO_AND_TAG in ${{ steps.decode.outputs.repo_and_tag_pairs }}; do
             if [[ "${REFERENCED_IMAGES}" == "" ]]; then
               for ARCH_SHORT_NAME in ${ARCH_SHORT_NAMES}; do
-                REFERENCED_IMAGES="${LOWER_DOCKER_ORG}/${REPO_AND_TAG}-${ARCH_SHORT_NAME} "
+                REFERENCED_IMAGES="${REFERENCED_IMAGES} ${LOWER_DOCKER_ORG}/${REPO_AND_TAG}-${ARCH_SHORT_NAME} "
               done
             fi
 
