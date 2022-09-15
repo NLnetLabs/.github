@@ -391,7 +391,7 @@ jobs:
           fi
 
           if [[ '${{ inputs.rpm_scriptlets_path }}' != '' ]]; then
-            if [[ ! -f ${{ inputs.rpm_scriptlets_path }} ]]; then
+            if [[ ! -f '${{ inputs.rpm_scriptlets_path }}' ]]; then
               echo "::error::Workflow input 'rpm_scriptlets_path' ('${{ inputs.rpm_scriptlets_path }}') must refer to a file in the Git checkout"
               exit 1
             fi
