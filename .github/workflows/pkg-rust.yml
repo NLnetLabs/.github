@@ -1166,6 +1166,9 @@ jobs:
             # save the md5 checksums for later comparison
             if sg lxd -c "lxc exec testcon -- sh -c \"xargs -a ${CONFIFILE_LIST_FILE} md5sum > ${SAVED_MD5SUMS}\""; then
               sg lxd -c "lxc exec testcon -- cat ${SAVED_MD5SUMS}"
+            else
+              echo "Conffile change preservation checking will be skipped because no conffiles were detected."
+              sg lxd -c "lxc exec testcon -- rm -f ${SAVED_MD5SUMS}"
             fi
             ;;
           centos)
