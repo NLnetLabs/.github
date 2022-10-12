@@ -302,21 +302,21 @@ jobs:
         id: pre_process_rules
         run: |
           if [[ "${{ inputs.cross_build_rules_path }}" != "" ]]; then
-            echo "cross_build_rules=${{ steps.transform_cross_build_rules_file.outputs.data }}" >> $GITHUB_OUTPUT
+            echo 'cross_build_rules=${{ steps.transform_cross_build_rules_file.outputs.data }}' >> $GITHUB_OUTPUT
           else
-            echo "cross_build_rules=${{ inputs.cross_build_rules }}" >> $GITHUB_OUTPUT
+            echo 'cross_build_rules=${{ inputs.cross_build_rules }}' >> $GITHUB_OUTPUT
           fi
 
           if [[ "${{ inputs.docker_build_rules_path }}" != "" ]]; then
-            echo "docker_build_rules=${{ steps.transform_docker_build_rules_file.outputs.data }}" >> $GITHUB_OUTPUT
+            echo 'docker_build_rules=${{ steps.transform_docker_build_rules_file.outputs.data }}' >> $GITHUB_OUTPUT
           else
-            echo "docker_build_rules=${{ inputs.docker_build_rules }}" >> $GITHUB_OUTPUT
+            echo 'docker_build_rules=${{ inputs.docker_build_rules }}' >> $GITHUB_OUTPUT
           fi
 
           if [[ "${{ inputs.package_build_rules_path }}" != "" ]]; then
-            echo "package_build_rules=${{ steps.transform_package_build_rules_file.outputs.data }}" >> $GITHUB_OUTPUT
+            echo 'package_build_rules=${{ steps.transform_package_build_rules_file.outputs.data }}' >> $GITHUB_OUTPUT
           else
-            echo "package_build_rules=${{ inputs.package_build_rules }}" >> $GITHUB_OUTPUT
+            echo 'package_build_rules=${{ inputs.package_build_rules }}' >> $GITHUB_OUTPUT
           fi
 
           if [[ "${{ inputs.package_test_rules_path }}" != "" ]]; then
@@ -334,7 +334,7 @@ jobs:
               JSON="${MODIFIED_JSON}"
             fi
           fi
-          echo "package_test_rules=${JSON}" >> $GITHUB_OUTPUT
+          echo 'package_test_rules=${JSON}' >> $GITHUB_OUTPUT
 
       - name: Print rules
         # Disable default use of bash -x for easier to read output in the log
@@ -490,13 +490,13 @@ jobs:
         id: encode
         run: |
           ENCODED_ALL_REPO_AND_TAG_PAIRS=$(echo "${{ steps.meta.outputs.tags }}" | base64)
-          echo "all_repo_and_tag_pairs=${ENCODED_ALL_REPO_AND_TAG_PAIRS}" >> $GITHUB_OUTPUT
+          echo 'all_repo_and_tag_pairs=${ENCODED_ALL_REPO_AND_TAG_PAIRS}' >> $GITHUB_OUTPUT
 
           ENCODED_FIRST_REPO_AND_TAG_PAIR=$(echo "${{ fromJSON(steps.meta.outputs.json).tags[0] }}" | base64)
-          echo "first_repo_and_tag_pair=${ENCODED_FIRST_REPO_AND_TAG_PAIR}" >> $GITHUB_OUTPUT
+          echo 'first_repo_and_tag_pair=${ENCODED_FIRST_REPO_AND_TAG_PAIR}' >> $GITHUB_OUTPUT
 
           ENCODED_LOWER_DOCKER_ORG=$(echo "${{ inputs.docker_org }}" | tr '[:upper:]' '[:lower:]' | base64)
-          echo "lower_docker_org=${ENCODED_LOWER_DOCKER_ORG}" >> $GITHUB_OUTPUT
+          echo 'lower_docker_org=${ENCODED_LOWER_DOCKER_ORG}' >> $GITHUB_OUTPUT
 
 
   # -------------------------------------------------------------------------------------------------------------------
@@ -521,9 +521,9 @@ jobs:
       id: verify
       run: |
         if [[ "${{ matrix.target }}" == "no-cross" ]]; then
-          echo "no-cross=true" >> $GITHUB_OUTPUT
+          echo 'no-cross=true' >> $GITHUB_OUTPUT
         else
-          echo "no-cross=false" >> $GITHUB_OUTPUT
+          echo 'no-cross=false' >> $GITHUB_OUTPUT
         fi
 
     - name: Checkout repository
@@ -1346,7 +1346,7 @@ jobs:
           # set of architecture specific images as the version specific multi-arch manifest we will publish.
           DOCKER_REPO_AND_TAG=$(echo "${{ needs.prepare.outputs.first_repo_and_tag_pair }}" | base64 -d)
           LOWER_DOCKER_ORG=$(echo "${{ needs.prepare.outputs.lower_docker_org }}" | base64 -d)
-          echo "image_name=${LOWER_DOCKER_ORG}/${DOCKER_REPO_AND_TAG}-${{ matrix.shortname }}" >> $GITHUB_OUTPUT
+          echo 'image_name=${LOWER_DOCKER_ORG}/${DOCKER_REPO_AND_TAG}-${{ matrix.shortname }}' >> $GITHUB_OUTPUT
 
       # Build a single architecture specific Docker image with an explicit architecture extension in the Docker
       # tag value. We have to push it to Docker Hub otherwise we can't make the multi-arch manifest below. If the
@@ -1423,8 +1423,8 @@ jobs:
           # This can then easily be used with a shell for loop in the steps below.
           REPO_AND_TAG_PAIRS=$(echo ${REPO_AND_TAG_PAIRS} | tr "\n" " " | tr -d "\n")
 
-          echo "repo_and_tag_pairs=${REPO_AND_TAG_PAIRS}" >> $GITHUB_OUTPUT
-          echo "lower_docker_org=${LOWER_DOCKER_ORG}" >> $GITHUB_OUTPUT
+          echo 'repo_and_tag_pairs=${REPO_AND_TAG_PAIRS}' >> $GITHUB_OUTPUT
+          echo 'lower_docker_org=${LOWER_DOCKER_ORG}' >> $GITHUB_OUTPUT
 
       - name: Create multi-arch manifest(s)
         run: |
