@@ -1207,7 +1207,8 @@ jobs:
       run: |
         case ${OS_NAME} in
           debian|ubuntu)
-            sg lxd -c "lxc exec testcon -- apt-get -y install /tmp/${PKG_FILE}"
+            # See https://github.com/NLnetLabs/.github/issues/17 regarding --force-confXXX
+            sg lxd -c "lxc exec testcon -- apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install /tmp/${PKG_FILE}"
             ;;
           centos)
             sg lxd -c "lxc exec testcon -- yum install -y /tmp/${PKG_FILE}"
