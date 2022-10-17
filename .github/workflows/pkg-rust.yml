@@ -264,7 +264,7 @@ jobs:
 
       - name: Load cross build rules
         if: ${{ inputs.cross_build_rules_path != '' }}
-        uses: fabasoad/yaml-json-xml-converter-action@v1.0.14
+        uses: fabasoad/yaml-json-xml-converter-action@v1.1.0
         id: transform_cross_build_rules_file
         with:
           path: ${{ inputs.cross_build_rules_path }}
@@ -273,7 +273,7 @@ jobs:
 
       - name: Load Docker build rules
         if: ${{ inputs.docker_build_rules_path != '' }}
-        uses: fabasoad/yaml-json-xml-converter-action@v1.0.14
+        uses: fabasoad/yaml-json-xml-converter-action@v1.1.0
         id: transform_docker_build_rules_file
         with:
           path: ${{ inputs.docker_build_rules_path }}
@@ -282,7 +282,7 @@ jobs:
 
       - name: Load package build rules
         if: ${{ inputs.package_build_rules_path != '' }}
-        uses: fabasoad/yaml-json-xml-converter-action@v1.0.14
+        uses: fabasoad/yaml-json-xml-converter-action@v1.1.0
         id: transform_package_build_rules_file
         with:
           path: ${{ inputs.package_build_rules_path }}
@@ -291,7 +291,7 @@ jobs:
 
       - name: Load packages test rules
         if: ${{ inputs.package_test_rules_path != '' }}
-        uses: fabasoad/yaml-json-xml-converter-action@v1.0.14
+        uses: fabasoad/yaml-json-xml-converter-action@v1.1.0
         id: transform_package_test_rules_file
         with:
           path: ${{ inputs.package_test_rules_path }}
