@@ -935,6 +935,9 @@ jobs:
             if [ -e "${{ matrix.systemd_service_unit_file }}" ]; then
                 mkdir -p target/rpm/
                 cp ${{ matrix.systemd_service_unit_file }} target/rpm/${MATRIX_PKG}.service
+            elif [[ "${{ matrix.systemd_service_unit_file }}" == *"/*" ]]; then
+                mkdir -p target/rpm/
+                cp ${{ matrix.systemd_service_unit_file }} target/rpm/
             fi
 
             # Ugly hack to use an alternate base Cargo Generate RPM configuration so that the selected variant overrides
