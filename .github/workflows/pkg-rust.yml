@@ -935,7 +935,7 @@ jobs:
             if [ -e "${{ matrix.systemd_service_unit_file }}" ]; then
                 mkdir -p target/rpm/
                 cp ${{ matrix.systemd_service_unit_file }} target/rpm/${MATRIX_PKG}.service
-            elif [[ "${{ matrix.systemd_service_unit_file }}" == *"/*" ]]; then
+            elif [[ "${{ matrix.systemd_service_unit_file }}" == *"*" ]]; then
                 mkdir -p target/rpm/
                 cp ${{ matrix.systemd_service_unit_file }} target/rpm/
             fi
