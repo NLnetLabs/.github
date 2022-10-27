@@ -976,9 +976,16 @@ jobs:
 
             for D in control_files data_files; do
               pushd $D
+
+              echo Listing package $D and sizes
               find . -type f -exec du -sh {} \;
+
+              echo
+              echo Printing non-binary files contained within $D
+
               # Use grep to exclude find only non-binary files that we can print
               find . -type f -exec grep -Il '.' {} \; -exec cat {} \; -exec echo \; -exec echo \;
+
               popd
               rm -R $D
             done
@@ -994,12 +1001,23 @@ jobs:
               mkdir t
               pushd t
               rpm2cpio ../$F | cpio -idmv || true
+
+              echo Listing package files and sizes
               find . -type f -exec du -sh {} \;
+
+              echo
+              echo Printing non-binary files contained within the package
+
               # Use grep to exclude find only non-binary files that we can print
               find . -type f -exec grep -Il '.' {} \; -exec cat {} \; -exec echo \; -exec echo \;
+
               popd
               rm -R t
+
+              echo Printing package scriptlets
+              rpm -qp --scripts ../$F
             done
+
             popd
             ;;
         esac
