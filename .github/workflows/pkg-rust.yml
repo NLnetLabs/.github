@@ -956,7 +956,7 @@ jobs:
             EXTRA_TAR_ARGS=
             if [[ "${DATA_ARCHIVE}" == *.xz ]]; then
               # Install XZ support that will be needed by TAR
-              apt install -y xz-utils
+              apt-get -y install -y xz-utils
               EXTRA_TAR_ARGS=J
             fi
             mkdir tar-hack
@@ -1183,7 +1183,7 @@ jobs:
             sg lxd -c "lxc file push $HOME/nlnetlabs.list testcon/etc/apt/sources.list.d/"
             sg lxd -c "lxc exec testcon -- wget -q https://packages.nlnetlabs.nl/aptkey.asc"
             sg lxd -c "lxc exec testcon -- apt-key add ./aptkey.asc"
-            sg lxd -c "lxc exec testcon -- apt update"
+            sg lxd -c "lxc exec testcon -- apt-get -y update"
             sg lxd -c "lxc exec testcon -- apt-get install -y ${{ matrix.pkg }}"
 
             # determine the conffiles, append a harmless line break to each one (so that they are modified) then save
