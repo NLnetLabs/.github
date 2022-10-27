@@ -43,7 +43,7 @@
 # migrate Docker packaging to GitHub Actions and which is now part of this workflow.
 #
 # Images use an Alpine base image for reduced image size and thus download time, and also for faster and simpler
-# installation of dependencies (apk add is way faster and simpler than apt install for example). However Alpine is
+# installation of dependencies (apk add is way faster and simpler than apt-get install for example). However Alpine is
 # MUSL based rather than GLIBC based, so cross-compiled binaries (see below) must target MUSL when intending to be
 # used within a Docker container.
 #
@@ -761,7 +761,6 @@ jobs:
     - name: Create the package
       env:
         MATRIX_PKG: ${{ matrix.pkg }}
-        MATRIX_IMAGE: ${{ matrix.image }}
         EXTRA_BUILD_ARGS: ${{ matrix.extra_build_args }}
         CROSS_TARGET: ${{ matrix.target }}
       run: |
@@ -876,30 +875,6 @@ jobs:
             rm -f target/debian/*.deb
 
             cargo deb --deb-version ${DEB_VER} ${OPT_VARIANT_ARG} -v ${EXTRA_CARGO_DEB_ARGS} -- --locked ${EXTRA_BUILD_ARGS}
-
-            # https://github.com/NLnetLabs/routinator/issues/783
-            # Patch the generated DEB to have ./ paths compatible with `unattended-upgrade`:
-            pushd target/debian
-            DEB_FILE_NAME=$(ls -1 *.deb | head -n 1)
-            DATA_ARCHIVE=$(ar t ${DEB_FILE_NAME} | grep -E '^data\.tar')
-            ar x ${DEB_FILE_NAME} ${DATA_ARCHIVE}
-            tar tf ${DATA_ARCHIVE}
-            EXTRA_TAR_ARGS=
-            if [[ "${DATA_ARCHIVE}" == *.xz ]]; then
-              # Install XZ support that will be needed by TAR
-              apt install -y xz-utils
-              EXTRA_TAR_ARGS=J
-            fi
-            mkdir tar-hack
-            tar -C tar-hack -xf ${DATA_ARCHIVE}
-            pushd tar-hack
-            tar c${EXTRA_TAR_ARGS}f ../${DATA_ARCHIVE} ./*
-            popd
-            tar tf ${DATA_ARCHIVE}
-            ar r ${DEB_FILE_NAME} ${DATA_ARCHIVE}
-            popd
-
-            ls -la target/debian/
             ;;
 
           centos)
@@ -932,9 +907,20 @@ jobs:
             # [package.metadata.generate-rpm.assets] setting with only one entry changed. We don't need this with
             # cargo-deb because it handles systemd service file selection automatically based on factors like the
             # current variant in use.
-            if [ -e "${{ matrix.systemd_service_unit_file }}" ]; then
+
+            # Support the older matrix variable name for backward compatibility.
+            if [[ "${{ matrix.rpm_systemd_service_unit_file }}" != "" ]]; then
+                SYSTEMD_SERVICE_UNIT_FILE="${{ matrix.rpm_systemd_service_unit_file }}"
+            else
+                SYSTEMD_SERVICE_UNIT_FILE="${{ matrix.systemd_service_unit_file }}"
+            fi
+
+            if [ -e "${SYSTEMD_SERVICE_UNIT_FILE}" ]; then
                 mkdir -p target/rpm/
-                cp ${{ matrix.systemd_service_unit_file }} target/rpm/${MATRIX_PKG}.service
+                cp ${SYSTEMD_SERVICE_UNIT_FILE} target/rpm/${MATRIX_PKG}.service
+            elif [[ "${SYSTEMD_SERVICE_UNIT_FILE}" == *"*" ]]; then
+                mkdir -p target/rpm/
+                cp ${SYSTEMD_SERVICE_UNIT_FILE} target/rpm
             fi
 
             # Ugly hack to use an alternate base Cargo Generate RPM configuration so that the selected variant overrides
@@ -976,8 +962,88 @@ jobs:
                 --set-metadata "version=\"${PKG_APP_VER}\"" \
                 ${SCRIPTLETS} \
                 ${EXTRA_CARGO_GENERATE_RPM_ARGS}
+            ;;
+        esac
 
+    - name: Post-process the package
+      run: |
+        case ${OS_NAME} in
+          debian|ubuntu)
+            # https://github.com/NLnetLabs/routinator/issues/783
+            # Patch the generated DEB to have ./ paths compatible with `unattended-upgrade`:
+            ls -la target/debian/
+
+            pushd target/debian
+            DEB_FILE_NAME=$(ls -1 *.deb | head -n 1)
+            DATA_ARCHIVE=$(ar t ${DEB_FILE_NAME} | grep -E '^data\.tar')
+            ar x ${DEB_FILE_NAME} ${DATA_ARCHIVE}
+            tar tf ${DATA_ARCHIVE}
+            EXTRA_TAR_ARGS=
+            if [[ "${DATA_ARCHIVE}" == *.xz ]]; then
+              # Install XZ support that will be needed by TAR
+              apt-get -y install -y xz-utils
+              EXTRA_TAR_ARGS=J
+            fi
+            mkdir tar-hack
+            tar -C tar-hack -xf ${DATA_ARCHIVE}
+            pushd tar-hack
+            tar c${EXTRA_TAR_ARGS}f ../${DATA_ARCHIVE} ./*
+            popd
+            tar tf ${DATA_ARCHIVE}
+            ar r ${DEB_FILE_NAME} ${DATA_ARCHIVE}
+            popd
+
+            ls -la target/debian/
+
+            pushd target/debian
+            dpkg -e ${DEB_FILE_NAME} control_files
+            dpkg -x ${DEB_FILE_NAME} data_files
+
+            for D in control_files data_files; do
+              pushd $D
+
+              echo Listing package $D and sizes
+              find . -type f -exec du -sh {} \;
+
+              echo
+              echo Printing non-binary files contained within $D
+
+              # Use grep to exclude find only non-binary files that we can print
+              find . -type f -exec grep -Il '.' {} \; -exec cat {} \; -exec echo \; -exec echo \;
+
+              popd
+              rm -R $D
+            done
+            popd
+            ;;
+
+          centos)
             ls -la target/generate-rpm/
+
+            pushd target/generate-rpm
+            for F in *.rpm; do
+              echo $F
+              mkdir t
+              pushd t
+              rpm2cpio ../$F | cpio -idmv || true
+
+              echo Listing package files and sizes
+              find . -type f -exec du -sh {} \;
+
+              echo
+              echo Printing non-binary files contained within the package
+
+              # Use grep to exclude find only non-binary files that we can print
+              find . -type f -exec grep -Il '.' {} \; -exec cat {} \; -exec echo \; -exec echo \;
+
+              popd
+              rm -R t
+
+              echo Printing package scriptlets
+              rpm -qp --scripts ../$F
+            done
+
+            popd
             ;;
         esac
 
@@ -1164,8 +1230,8 @@ jobs:
             sg lxd -c "lxc file push $HOME/nlnetlabs.list testcon/etc/apt/sources.list.d/"
             sg lxd -c "lxc exec testcon -- wget -q https://packages.nlnetlabs.nl/aptkey.asc"
             sg lxd -c "lxc exec testcon -- apt-key add ./aptkey.asc"
-            sg lxd -c "lxc exec testcon -- apt update"
-            sg lxd -c "lxc exec testcon -- apt install -y ${{ matrix.pkg }}"
+            sg lxd -c "lxc exec testcon -- apt-get -y update"
+            sg lxd -c "lxc exec testcon -- apt-get install -y ${{ matrix.pkg }}"
 
             # determine the conffiles, append a harmless line break to each one (so that they are modified) then save
             # the md5sums of the modified files for comparison after upgrade to ensure our edits are not overwritten
@@ -1204,7 +1270,9 @@ jobs:
             sg lxd -c "lxc exec testcon -- apt-get -y install /tmp/${PKG_FILE}"
             ;;
           centos)
-            sg lxd -c "lxc exec testcon -- yum install -y /tmp/${PKG_FILE}"
+            sg lxd -c "lxc exec testcon -- yum install -y /tmp/${PKG_FILE}" 2>&1 | tee install.log
+            # yum install exits with code 0 even if scriptlets fail, so look for some sign of failure
+            ! grep -qE '(err|warn|fail)' install.log
             ;;
         esac
 
@@ -1225,7 +1293,9 @@ jobs:
             sg lxd -c "lxc exec testcon -- apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install /tmp/${PKG_FILE}"
             ;;
           centos)
-            sg lxd -c "lxc exec testcon -- yum install -y /tmp/${PKG_FILE}"
+            sg lxd -c "lxc exec testcon -- yum install -y /tmp/${PKG_FILE}" 2>&1 | tee upgrade.log
+            # yum install exits with code 0 even if scriptlets fail, so look for some sign of failure
+            ! grep -qE '(err|warn|fail)' upgrade.log
             ;;
         esac
 
