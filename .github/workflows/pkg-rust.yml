@@ -43,7 +43,7 @@
 # migrate Docker packaging to GitHub Actions and which is now part of this workflow.
 #
 # Images use an Alpine base image for reduced image size and thus download time, and also for faster and simpler
-# installation of dependencies (apk add is way faster and simpler than apt install for example). However Alpine is
+# installation of dependencies (apk add is way faster and simpler than apt-get install for example). However Alpine is
 # MUSL based rather than GLIBC based, so cross-compiled binaries (see below) must target MUSL when intending to be
 # used within a Docker container.
 #
@@ -761,7 +761,6 @@ jobs:
     - name: Create the package
       env:
         MATRIX_PKG: ${{ matrix.pkg }}
-        MATRIX_IMAGE: ${{ matrix.image }}
         EXTRA_BUILD_ARGS: ${{ matrix.extra_build_args }}
         CROSS_TARGET: ${{ matrix.target }}
       run: |
@@ -1185,7 +1184,7 @@ jobs:
             sg lxd -c "lxc exec testcon -- wget -q https://packages.nlnetlabs.nl/aptkey.asc"
             sg lxd -c "lxc exec testcon -- apt-key add ./aptkey.asc"
             sg lxd -c "lxc exec testcon -- apt update"
-            sg lxd -c "lxc exec testcon -- apt install -y ${{ matrix.pkg }}"
+            sg lxd -c "lxc exec testcon -- apt-get install -y ${{ matrix.pkg }}"
 
             # determine the conffiles, append a harmless line break to each one (so that they are modified) then save
             # the md5sums of the modified files for comparison after upgrade to ensure our edits are not overwritten
@@ -1224,7 +1223,9 @@ jobs:
             sg lxd -c "lxc exec testcon -- apt-get -y install /tmp/${PKG_FILE}"
             ;;
           centos)
-            sg lxd -c "lxc exec testcon -- yum install -y /tmp/${PKG_FILE}"
+            sg lxd -c "lxc exec testcon -- yum install -y /tmp/${PKG_FILE}" 2>&1 | tee install.log
+            # yum install exits with code 0 even if scriptlets fail, so look for some sign of failure
+            ! grep -qE '(err|warn|fail)' install.log
             ;;
         esac
 
@@ -1245,7 +1246,9 @@ jobs:
             sg lxd -c "lxc exec testcon -- apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install /tmp/${PKG_FILE}"
             ;;
           centos)
-            sg lxd -c "lxc exec testcon -- yum install -y /tmp/${PKG_FILE}"
+            sg lxd -c "lxc exec testcon -- yum install -y /tmp/${PKG_FILE}" 2>&1 | tee upgrade.log
+            # yum install exits with code 0 even if scriptlets fail, so look for some sign of failure
+            ! grep -qE '(err|warn|fail)' upgrade.log
             ;;
         esac
 
