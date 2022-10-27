@@ -952,7 +952,22 @@ jobs:
             # uninstall script in the TOML settings using the cargo-generate-rpm --set-metadata (aka -s)
             # command line argument.
             if [[ "${{ inputs.rpm_scriptlets_path }}" != "" ]]; then
-              SCRIPTLETS='--metadata-overwrite=${{ inputs.rpm_scriptlets_path  }}'
+              # Download the RPM systemd macros shell functions file fragment
+              SYSTEMD_RPM_MACROS_URL="https://raw.githubusercontent.com/NLnetLabs/.github/rpm-scriptlet-systemd-support/fragments/macros.systemd.sh"
+              SYSTEMD_RPM_MACROS_FILE="/tmp/systemd_rpm_macros"
+              curl --proto '=https' --tlsv1.2 --output ${SYSTEMD_RPM_MACROS_FILE} ${SYSTEMD_RPM_MACROS_URL}
+
+              # Replace any reference to #SYSTEMD_RPM_MACROS# in the scriptlet file with the downloaded RPM systemd macros
+              # shell fragment.
+              SCRIPTLET_FILE="${{ inputs.rpm_scriptlets_path }}"
+              mv "${SCRIPTLET_FILE}" "${SCRIPTLET_FILE}.org"
+              sed "/#SYSTEMD_RPM_MACROS#/{              
+r ${SYSTEMD_RPM_MACROS_FILE}
+d
+}" "${SCRIPTLET_FILE}.org" > "${SCRIPTLET_FILE}"
+
+              # Configure ourselves to use the updated scriptlets file as input to cargo generate-rpm.
+              SCRIPTLETS='--metadata-overwrite=${{ inputs.rpm_scriptlets_path }}'
             fi
 
             # This shouldn't be necessary...
