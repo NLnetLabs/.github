@@ -992,7 +992,7 @@ jobs:
               echo $F
               mkdir t
               pushd t
-              rpm2cpio ../$F | cpio -idmv
+              rpm2cpio ../$F | cpio -idmv || true
               find . -type f -exec du -sh {} \;
               find . -type f -not -executable -print -exec cat {} \; -exec echo \; -exec echo \;
               popd
