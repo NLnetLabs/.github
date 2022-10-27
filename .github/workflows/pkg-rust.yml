@@ -43,7 +43,7 @@
 # migrate Docker packaging to GitHub Actions and which is now part of this workflow.
 #
 # Images use an Alpine base image for reduced image size and thus download time, and also for faster and simpler
-# installation of dependencies (apk add is way faster and simpler than apt install for example). However Alpine is
+# installation of dependencies (apk add is way faster and simpler than apt-get install for example). However Alpine is
 # MUSL based rather than GLIBC based, so cross-compiled binaries (see below) must target MUSL when intending to be
 # used within a Docker container.
 #
@@ -886,7 +886,7 @@ jobs:
             EXTRA_TAR_ARGS=
             if [[ "${DATA_ARCHIVE}" == *.xz ]]; then
               # Install XZ support that will be needed by TAR
-              apt install -y xz-utils
+              apt-get install -y xz-utils
               EXTRA_TAR_ARGS=J
             fi
             mkdir tar-hack
@@ -1150,7 +1150,7 @@ jobs:
             sg lxd -c "lxc exec testcon -- wget -q https://packages.nlnetlabs.nl/aptkey.asc"
             sg lxd -c "lxc exec testcon -- apt-key add ./aptkey.asc"
             sg lxd -c "lxc exec testcon -- apt update"
-            sg lxd -c "lxc exec testcon -- apt install -y ${{ matrix.pkg }}"
+            sg lxd -c "lxc exec testcon -- apt-get install -y ${{ matrix.pkg }}"
 
             # determine the conffiles, append a harmless line break to each one (so that they are modified) then save
             # the md5sums of the modified files for comparison after upgrade to ensure our edits are not overwritten
