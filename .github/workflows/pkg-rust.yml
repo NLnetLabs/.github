@@ -970,6 +970,7 @@ jobs:
 
             ls -la target/debian/
 
+            pushd target/debian
             dpkg -e ${DEB_FILE_NAME} control_files
             dpkg -x ${DEB_FILE_NAME} data_files
 
@@ -980,6 +981,7 @@ jobs:
               popd
               rm -R $D
             done
+            popd
             ;;
 
           centos)
