@@ -977,7 +977,8 @@ jobs:
             for D in control_files data_files; do
               pushd $D
               find . -type f -exec du -sh {} \;
-              find . -type f -not -executable -print -exec cat {} \; -exec echo \; -exec echo \;
+              # Use grep to exclude find only non-binary files that we can print
+              find . -type f -exec grep -Il '.' {} \; -exec cat {} \; -exec echo \; -exec echo \;
               popd
               rm -R $D
             done
@@ -994,7 +995,8 @@ jobs:
               pushd t
               rpm2cpio ../$F | cpio -idmv || true
               find . -type f -exec du -sh {} \;
-              find . -type f -not -executable -print -exec cat {} \; -exec echo \; -exec echo \;
+              # Use grep to exclude find only non-binary files that we can print
+              find . -type f -exec grep -Il '.' {} \; -exec cat {} \; -exec echo \; -exec echo \;
               popd
               rm -R t
             done
