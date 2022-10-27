@@ -875,30 +875,6 @@ jobs:
             rm -f target/debian/*.deb
 
             cargo deb --deb-version ${DEB_VER} ${OPT_VARIANT_ARG} -v ${EXTRA_CARGO_DEB_ARGS} -- --locked ${EXTRA_BUILD_ARGS}
-
-            # https://github.com/NLnetLabs/routinator/issues/783
-            # Patch the generated DEB to have ./ paths compatible with `unattended-upgrade`:
-            pushd target/debian
-            DEB_FILE_NAME=$(ls -1 *.deb | head -n 1)
-            DATA_ARCHIVE=$(ar t ${DEB_FILE_NAME} | grep -E '^data\.tar')
-            ar x ${DEB_FILE_NAME} ${DATA_ARCHIVE}
-            tar tf ${DATA_ARCHIVE}
-            EXTRA_TAR_ARGS=
-            if [[ "${DATA_ARCHIVE}" == *.xz ]]; then
-              # Install XZ support that will be needed by TAR
-              apt-get install -y xz-utils
-              EXTRA_TAR_ARGS=J
-            fi
-            mkdir tar-hack
-            tar -C tar-hack -xf ${DATA_ARCHIVE}
-            pushd tar-hack
-            tar c${EXTRA_TAR_ARGS}f ../${DATA_ARCHIVE} ./*
-            popd
-            tar tf ${DATA_ARCHIVE}
-            ar r ${DEB_FILE_NAME} ${DATA_ARCHIVE}
-            popd
-
-            ls -la target/debian/
             ;;
 
           centos)
@@ -961,8 +937,88 @@ jobs:
                 --set-metadata "version=\"${PKG_APP_VER}\"" \
                 ${SCRIPTLETS} \
                 ${EXTRA_CARGO_GENERATE_RPM_ARGS}
+            ;;
+        esac
 
+    - name: Post-process the package
+      run: |
+        case ${OS_NAME} in
+          debian|ubuntu)
+            # https://github.com/NLnetLabs/routinator/issues/783
+            # Patch the generated DEB to have ./ paths compatible with `unattended-upgrade`:
+            ls -la target/debian/
+
+            pushd target/debian
+            DEB_FILE_NAME=$(ls -1 *.deb | head -n 1)
+            DATA_ARCHIVE=$(ar t ${DEB_FILE_NAME} | grep -E '^data\.tar')
+            ar x ${DEB_FILE_NAME} ${DATA_ARCHIVE}
+            tar tf ${DATA_ARCHIVE}
+            EXTRA_TAR_ARGS=
+            if [[ "${DATA_ARCHIVE}" == *.xz ]]; then
+              # Install XZ support that will be needed by TAR
+              apt-get -y install -y xz-utils
+              EXTRA_TAR_ARGS=J
+            fi
+            mkdir tar-hack
+            tar -C tar-hack -xf ${DATA_ARCHIVE}
+            pushd tar-hack
+            tar c${EXTRA_TAR_ARGS}f ../${DATA_ARCHIVE} ./*
+            popd
+            tar tf ${DATA_ARCHIVE}
+            ar r ${DEB_FILE_NAME} ${DATA_ARCHIVE}
+            popd
+
+            ls -la target/debian/
+
+            pushd target/debian
+            dpkg -e ${DEB_FILE_NAME} control_files
+            dpkg -x ${DEB_FILE_NAME} data_files
+
+            for D in control_files data_files; do
+              pushd $D
+
+              echo Listing package $D and sizes
+              find . -type f -exec du -sh {} \;
+
+              echo
+              echo Printing non-binary files contained within $D
+
+              # Use grep to exclude find only non-binary files that we can print
+              find . -type f -exec grep -Il '.' {} \; -exec cat {} \; -exec echo \; -exec echo \;
+
+              popd
+              rm -R $D
+            done
+            popd
+            ;;
+
+          centos)
             ls -la target/generate-rpm/
+
+            pushd target/generate-rpm
+            for F in *.rpm; do
+              echo $F
+              mkdir t
+              pushd t
+              rpm2cpio ../$F | cpio -idmv || true
+
+              echo Listing package files and sizes
+              find . -type f -exec du -sh {} \;
+
+              echo
+              echo Printing non-binary files contained within the package
+
+              # Use grep to exclude find only non-binary files that we can print
+              find . -type f -exec grep -Il '.' {} \; -exec cat {} \; -exec echo \; -exec echo \;
+
+              popd
+              rm -R t
+
+              echo Printing package scriptlets
+              rpm -qp --scripts ../$F
+            done
+
+            popd
             ;;
         esac
 
@@ -1149,7 +1205,7 @@ jobs:
             sg lxd -c "lxc file push $HOME/nlnetlabs.list testcon/etc/apt/sources.list.d/"
             sg lxd -c "lxc exec testcon -- wget -q https://packages.nlnetlabs.nl/aptkey.asc"
             sg lxd -c "lxc exec testcon -- apt-key add ./aptkey.asc"
-            sg lxd -c "lxc exec testcon -- apt update"
+            sg lxd -c "lxc exec testcon -- apt-get -y update"
             sg lxd -c "lxc exec testcon -- apt-get install -y ${{ matrix.pkg }}"
 
             # determine the conffiles, append a harmless line break to each one (so that they are modified) then save
