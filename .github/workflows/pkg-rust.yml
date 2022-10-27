@@ -960,7 +960,7 @@ jobs:
               # Replace any reference to #SYSTEMD_RPM_MACROS# in the scriptlet file with the downloaded RPM systemd macros
               # shell fragment.
               sed --in-place=.org -f - "${{ inputs.rpm_scriptlets_path }}" << EOF
-              /#PLACEHOLDER#/{
+              /#RPM_SYSTEMD_MACROS#/{
                 r $SYSTEMD_RPM_MACROS_FILE
                 d
               }
