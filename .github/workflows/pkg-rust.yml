@@ -761,7 +761,6 @@ jobs:
     - name: Create the package
       env:
         MATRIX_PKG: ${{ matrix.pkg }}
-        MATRIX_IMAGE: ${{ matrix.image }}
         EXTRA_BUILD_ARGS: ${{ matrix.extra_build_args }}
         CROSS_TARGET: ${{ matrix.target }}
       run: |
