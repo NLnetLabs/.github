@@ -74,3 +74,19 @@ systemd_update_helper() {
         systemd_update_helper_v239 "$@"
     fi
 }
+
+systemd_post() {
+    systemd_update_helper install-system-units "$@"
+}
+
+systemd_preun() {
+    systemd_update_helper remove-system-units "$@"
+}
+
+systemd_postun_with_restart() {
+    systemd_update_helper mark-restart-system-units "$@"
+}
+
+systemd_triggers() {
+    systemd_update_helper system-reload
+}
