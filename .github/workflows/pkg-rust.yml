@@ -1190,7 +1190,9 @@ jobs:
             sg lxd -c "lxc exec testcon -- apt-get -y install /tmp/${PKG_FILE}"
             ;;
           centos)
-            sg lxd -c "lxc exec testcon -- yum install -y /tmp/${PKG_FILE}"
+            sg lxd -c "lxc exec testcon -- yum install -y /tmp/${PKG_FILE}" 2>&1 | tee install.log
+            # yum install exits with code 0 even if scriptlets fail, so look for some sign of failure
+            ! grep -qE '(err|warn|fail)' install.log
             ;;
         esac
 
@@ -1211,7 +1213,9 @@ jobs:
             sg lxd -c "lxc exec testcon -- apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install /tmp/${PKG_FILE}"
             ;;
           centos)
-            sg lxd -c "lxc exec testcon -- yum install -y /tmp/${PKG_FILE}"
+            sg lxd -c "lxc exec testcon -- yum install -y /tmp/${PKG_FILE}" 2>&1 | tee upgrade.log
+            # yum install exits with code 0 even if scriptlets fail, so look for some sign of failure
+            ! grep -qE '(err|warn|fail)' upgrade.log
             ;;
         esac
 
