@@ -932,12 +932,20 @@ jobs:
             # [package.metadata.generate-rpm.assets] setting with only one entry changed. We don't need this with
             # cargo-deb because it handles systemd service file selection automatically based on factors like the
             # current variant in use.
-            if [ -e "${{ matrix.systemd_service_unit_file }}" ]; then
+
+            # Support the older matrix variable name for backward compatibility.
+            if [[ "${{ matrix.rpm_systemd_service_unit_file }}" != "" ]]; then
+                SYSTEMD_SERVICE_UNIT_FILE="${{ matrix.rpm_systemd_service_unit_file }}"
+            else
+                SYSTEMD_SERVICE_UNIT_FILE="${{ matrix.systemd_service_unit_file }}"
+            fi
+
+            if [ -e "${SYSTEMD_SERVICE_UNIT_FILE}" ]; then
                 mkdir -p target/rpm/
-                cp ${{ matrix.systemd_service_unit_file }} target/rpm/${MATRIX_PKG}.service
-            elif [[ "${{ matrix.systemd_service_unit_file }}" == *"*" ]]; then
+                cp ${SYSTEMD_SERVICE_UNIT_FILE} target/rpm/${MATRIX_PKG}.service
+            elif [[ "${SYSTEMD_SERVICE_UNIT_FILE}" == *"*" ]]; then
                 mkdir -p target/rpm/
-                cp ${{ matrix.systemd_service_unit_file }} target/rpm/
+                cp ${SYSTEMD_SERVICE_UNIT_FILE} target/rpm
             fi
 
             # Ugly hack to use an alternate base Cargo Generate RPM configuration so that the selected variant overrides
