@@ -876,30 +876,6 @@ jobs:
             rm -f target/debian/*.deb
 
             cargo deb --deb-version ${DEB_VER} ${OPT_VARIANT_ARG} -v ${EXTRA_CARGO_DEB_ARGS} -- --locked ${EXTRA_BUILD_ARGS}
-
-            # https://github.com/NLnetLabs/routinator/issues/783
-            # Patch the generated DEB to have ./ paths compatible with `unattended-upgrade`:
-            pushd target/debian
-            DEB_FILE_NAME=$(ls -1 *.deb | head -n 1)
-            DATA_ARCHIVE=$(ar t ${DEB_FILE_NAME} | grep -E '^data\.tar')
-            ar x ${DEB_FILE_NAME} ${DATA_ARCHIVE}
-            tar tf ${DATA_ARCHIVE}
-            EXTRA_TAR_ARGS=
-            if [[ "${DATA_ARCHIVE}" == *.xz ]]; then
-              # Install XZ support that will be needed by TAR
-              apt install -y xz-utils
-              EXTRA_TAR_ARGS=J
-            fi
-            mkdir tar-hack
-            tar -C tar-hack -xf ${DATA_ARCHIVE}
-            pushd tar-hack
-            tar c${EXTRA_TAR_ARGS}f ../${DATA_ARCHIVE} ./*
-            popd
-            tar tf ${DATA_ARCHIVE}
-            ar r ${DEB_FILE_NAME} ${DATA_ARCHIVE}
-            popd
-
-            ls -la target/debian/
             ;;
 
           centos)
@@ -962,8 +938,66 @@ jobs:
                 --set-metadata "version=\"${PKG_APP_VER}\"" \
                 ${SCRIPTLETS} \
                 ${EXTRA_CARGO_GENERATE_RPM_ARGS}
+            ;;
+        esac
 
+    - name: Post-process the package
+      run: |
+        case ${OS_NAME} in
+          debian|ubuntu)
+            # https://github.com/NLnetLabs/routinator/issues/783
+            # Patch the generated DEB to have ./ paths compatible with `unattended-upgrade`:
+            ls -la target/debian/
+
+            pushd target/debian
+            DEB_FILE_NAME=$(ls -1 *.deb | head -n 1)
+            DATA_ARCHIVE=$(ar t ${DEB_FILE_NAME} | grep -E '^data\.tar')
+            ar x ${DEB_FILE_NAME} ${DATA_ARCHIVE}
+            tar tf ${DATA_ARCHIVE}
+            EXTRA_TAR_ARGS=
+            if [[ "${DATA_ARCHIVE}" == *.xz ]]; then
+              # Install XZ support that will be needed by TAR
+              apt install -y xz-utils
+              EXTRA_TAR_ARGS=J
+            fi
+            mkdir tar-hack
+            tar -C tar-hack -xf ${DATA_ARCHIVE}
+            pushd tar-hack
+            tar c${EXTRA_TAR_ARGS}f ../${DATA_ARCHIVE} ./*
+            popd
+            tar tf ${DATA_ARCHIVE}
+            ar r ${DEB_FILE_NAME} ${DATA_ARCHIVE}
+            popd
+
+            ls -la target/debian/
+
+            dpkg -e ${DEB_FILE_NAME} control_files
+            dpkg -x ${DEB_FILE_NAME} data_files
+
+            for D in control_files data_files; do
+              pushd $D
+              find . -type f -exec du -sh {} \;
+              find . -type f -not -executable -print -exec cat {} \; -exec echo \; -exec echo \;
+              popd
+              rm -R $D
+            done
+            ;;
+
+          centos)
             ls -la target/generate-rpm/
+
+            pushd target/generate-rpm
+            for F in *.rpm; do
+              echo $F
+              mkdir t
+              pushd t
+              rpm2cpio ../$F | cpio -idmv
+              find . -type f -exec du -sh {} \;
+              find . -type f -not -executable -print -exec cat {} \; -exec echo \; -exec echo \;
+              popd
+              rm -R t
+            done
+            popd
             ;;
         esac
 
