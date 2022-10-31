@@ -251,6 +251,7 @@ jobs:
   prepare:
     runs-on: ubuntu-22.04
     outputs:
+      has_docker_secrets: ${{ steps.verify_inputs.has_docker_secrets }}
       all_repo_and_tag_pairs: ${{ steps.encode.outputs.all_repo_and_tag_pairs }}
       first_repo_and_tag_pair: ${{ steps.encode.outputs.first_repo_and_tag_pair }}
       lower_docker_org: ${{ steps.encode.outputs.lower_docker_org }}
@@ -415,9 +416,15 @@ jobs:
               exit 1
             fi
           fi
+          
+          if [[ "${{ secrets.DOCKER_HUB_ID }}" != '' || "${{ secrets.DOCKER_HUB_TOKEN }}" != '' ]]; then
+            echo "::set-output name=has_docker_secrets::true";
+          else
+            echo "::set-output name=has_docker_secrets::false";
+          fi
 
       - name: Verify Docker credentials
-        if: ${{ steps.pre_process_rules.outputs.docker_build_rules != '{}' }}
+        if: ${{ steps.pre_process_rules.outputs.docker_build_rules != '{}' && steps.verify_inputs.outputs.has_docker_secrets }}
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_ID }}
@@ -1426,6 +1433,7 @@ jobs:
           rm dockerbin/${{ matrix.platform }}/bins.tar
 
       - name: Log into Docker Hub
+        if: ${{ needs.prepare.outputs.has_docker_secrets }}
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_ID }}
@@ -1498,7 +1506,7 @@ jobs:
   # Logs in to Docker Hub using secrets configured in this GitHub repository.
   docker-manifest:
     needs: [prepare, docker]
-    if: ${{ contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' && needs.prepare.outputs.docker_build_rules != '{}' }}
+    if: ${{ contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' && needs.prepare.outputs.has_docker_secrets }}
     runs-on: ubuntu-20.04
     steps:
       - name: Log into Docker Hub
