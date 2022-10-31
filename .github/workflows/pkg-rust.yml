@@ -417,7 +417,7 @@ jobs:
           fi
 
       - name: Verify Docker credentials
-        if: ${{ steps.pre_process_rules.outputs.docker_build_rules != '{}' }}
+        if: ${{ steps.pre_process_rules.outputs.docker_build_rules != '{}' && secrets.DOCKER_HUB_ID != '' && secrets.DOCKER_HUB_TOKEN != '' }}
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_ID }}
@@ -1426,6 +1426,7 @@ jobs:
           rm dockerbin/${{ matrix.platform }}/bins.tar
 
       - name: Log into Docker Hub
+        if: ${{ secrets.DOCKER_HUB_ID != '' && secrets.DOCKER_HUB_TOKEN != '' }}
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_ID }}
@@ -1498,7 +1499,7 @@ jobs:
   # Logs in to Docker Hub using secrets configured in this GitHub repository.
   docker-manifest:
     needs: [prepare, docker]
-    if: ${{ contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' && needs.prepare.outputs.docker_build_rules != '{}' }}
+    if: ${{ contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' && needs.prepare.outputs.docker_build_rules != '{}' && secrets.DOCKER_HUB_ID != '' && secrets.DOCKER_HUB_TOKEN != '' }}
     runs-on: ubuntu-20.04
     steps:
       - name: Log into Docker Hub
