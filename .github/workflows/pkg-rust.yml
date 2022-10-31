@@ -174,7 +174,7 @@ on:
         type: string
         default: false
       docker_build_rules:
-        description: "A GitHub Actions matrix in JSON format with platform, shortname, crosstarget (required if mode is copy), mode (optional: build or copy) and cargo_args (optional) fields."
+        description: "A GitHub Actions matrix in JSON format with platform, shortname, crosstarget (required if mode is copy), mode (optional: build (default) or copy) and cargo_args (optional) fields."
         required: false
         type: string
         default: '{}'
@@ -1283,16 +1283,16 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Verify inputs
+        id: verify
         run: |
-          case ${{ matrix.mode }} in
-            copy)
-              if [[ "${{ matrix.platform }}" == "" ]]; then
-                echo "::error::Matrix variable 'platform' in docker_build_rules(_path) must be a supported buildx platform. See: https://github.com/moby/buildkit#building-multi-platform-images"
-                exit 1
-              fi
+          MODE="${{ matrix.mode }}"
+
+          case ${MODE} in
+            "")
+              MODE="build"
               ;;
 
-            build)
+            build|copy)
               ;;
 
             *)
@@ -1301,22 +1301,31 @@ jobs:
               ;;
           esac
 
+          if [[ "${MODE}" == "copy" ]]; then
+            if [[ "${{ matrix.platform }}" == "" ]]; then
+              echo "::error::Matrix variable 'platform' in docker_build_rules(_path) must be a supported buildx platform. See: https://github.com/moby/buildkit#building-multi-platform-images"
+              exit 1
+            fi
+          fi
+
           if [[ "${{ matrix.shortname }}" == "" ]]; then
             echo "::error::Matrix variable 'shortname' in docker_build_rules(_path) must set and non-empty."
             exit 1
           fi
+          
+          echo "::set-output name=mode::${MODE}"
 
       - uses: docker/setup-qemu-action@v2
         # Don't use QEmu for compiling, it's way too slow on GitHub Actions.
         # Only use it for making images that will contain prebuilt binaries.
-        if: ${{ matrix.mode == 'copy' }}
+        if: ${{ steps.verify.outputs.mode == 'copy' }}
         with:
           platforms: ${{ matrix.platform }}
 
       - uses: docker/setup-buildx-action@v2
 
       - name: Download cross compiled binaries
-        if: ${{ matrix.mode == 'copy' }}
+        if: ${{ steps.verify.outputs.mode == 'copy' }}
         uses: actions/download-artifact@v3
         with:
           name: tmp-cross-binaries-${{ matrix.crosstarget }}
@@ -1326,7 +1335,7 @@ jobs:
           path: dockerbin/${{ matrix.platform }}
 
       - name: Untar the set of downloaded binaries
-        if: ${{ matrix.mode == 'copy' }}
+        if: ${{ steps.verify.outputs.mode == 'copy' }}
         run: |
           tar vpxf dockerbin/${{ matrix.platform }}/bins.tar --transform='s/.*\///' -C dockerbin/${{ matrix.platform }}/
           find dockerbin/${{ matrix.platform }}/ -type d -empty -delete
@@ -1362,7 +1371,7 @@ jobs:
           platforms: ${{ matrix.platform }}
           tags: ${{ steps.gen.outputs.image_name }}
           build-args: |
-            MODE=${{ matrix.mode }}
+            MODE=${{ steps.verify.outputs.mode }}
             CARGO_ARGS=${{ matrix.cargo_args }}
           load: true
 
@@ -1392,7 +1401,7 @@ jobs:
           platforms: ${{ matrix.platform }}
           tags: ${{ steps.gen.outputs.image_name }}
           build-args: |
-            MODE=${{ matrix.mode }}
+            MODE=${{ steps.verify.outputs.mode }}
             CARGO_ARGS=${{ matrix.cargo_args }}
           push: true
 
