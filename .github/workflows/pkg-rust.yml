@@ -420,9 +420,9 @@ jobs:
           fi
           
           if [[ "${{ secrets.DOCKER_HUB_ID }}" != '' || "${{ secrets.DOCKER_HUB_TOKEN }}" != '' ]]; then
-            echo "::set-output name=has_docker_secrets::true";
+            echo "has_docker_secrets=true" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=has_docker_secrets::false";
+            echo "has_docker_secrets=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Verify Docker credentials
@@ -1405,8 +1405,8 @@ jobs:
             echo "::error::Matrix variable 'shortname' in docker_build_rules(_path) must set and non-empty."
             exit 1
           fi
-          
-          echo "::set-output name=mode::${MODE}"
+
+          echo "mode=${MODE}" >> $GITHUB_OUTPUT
 
       - uses: docker/setup-qemu-action@v2
         # Don't use QEmu for compiling, it's way too slow on GitHub Actions.
