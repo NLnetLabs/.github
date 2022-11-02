@@ -294,6 +294,7 @@ jobs:
       - name: Pre-process rules
         id: pre_process_rules
         run: |
+          cat $0
           if [[ "${{ inputs.cross_build_rules_path }}" != "" ]]; then
             echo "cross_build_rules=$(echo ${{ steps.transform_cross_build_rules_file.outputs.output }} | jq -c)" >> $GITHUB_OUTPUT
           else
