@@ -1319,7 +1319,7 @@ jobs:
             ;;
         esac
 
-    - name: Check whether upgrade failure is fatal
+    - name: Require successful upgrade
       if: ${{ steps.upgrade_package.outcome == 'failure' && !inputs.package_tests_ignore_upgrade_failure }}
       uses: actions/github-script@v6
       with:
