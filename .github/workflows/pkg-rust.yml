@@ -303,25 +303,25 @@ jobs:
         id: pre_process_rules
         run: |
           if [[ "${{ inputs.cross_build_rules_path }}" != "" ]]; then
-            echo 'cross_build_rules=${{ steps.transform_cross_build_rules_file.outputs.data }}' >> $GITHUB_OUTPUT
+            echo 'cross_build_rules=${{ steps.transform_cross_build_rules_file.outputs.output }}' >> $GITHUB_OUTPUT
           else
             echo 'cross_build_rules=${{ inputs.cross_build_rules }}' >> $GITHUB_OUTPUT
           fi
 
           if [[ "${{ inputs.docker_build_rules_path }}" != "" ]]; then
-            echo 'docker_build_rules=${{ steps.transform_docker_build_rules_file.outputs.data }}' >> $GITHUB_OUTPUT
+            echo 'docker_build_rules=${{ steps.transform_docker_build_rules_file.outputs.output }}' >> $GITHUB_OUTPUT
           else
             echo 'docker_build_rules=${{ inputs.docker_build_rules }}' >> $GITHUB_OUTPUT
           fi
 
           if [[ "${{ inputs.package_build_rules_path }}" != "" ]]; then
-            echo 'package_build_rules=${{ steps.transform_package_build_rules_file.outputs.data }}' >> $GITHUB_OUTPUT
+            echo 'package_build_rules=${{ steps.transform_package_build_rules_file.outputs.output }}' >> $GITHUB_OUTPUT
           else
             echo 'package_build_rules=${{ inputs.package_build_rules }}' >> $GITHUB_OUTPUT
           fi
 
           if [[ "${{ inputs.package_test_rules_path }}" != "" ]]; then
-            JSON='${{ steps.transform_package_test_rules_file.outputs.data }}'
+            JSON='${{ steps.transform_package_test_rules_file.outputs.output }}'
           else
             JSON='${{ inputs.package_test_rules }}'
           fi
