@@ -298,7 +298,7 @@ jobs:
           if [[ "${{ inputs.cross_build_rules_path }}" != "" ]]; then
             echo "cross_build_rules=$(echo ${{ steps.transform_cross_build_rules_file.outputs.output }} | jq -c)" >> $GITHUB_OUTPUT
           else
-            echo "cross_build_rules=$(echo ${{ inputs.cross_build_rules }} | jq -c)"'" >> $GITHUB_OUTPUT
+            echo "cross_build_rules=$(echo ${{ inputs.cross_build_rules }} | jq -c)" >> $GITHUB_OUTPUT
           fi
 
           if [[ "${{ inputs.docker_build_rules_path }}" != "" ]]; then
