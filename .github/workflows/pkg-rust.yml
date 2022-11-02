@@ -315,7 +315,7 @@ jobs:
           if [[ "${{ inputs.package_test_rules_path }}" != "" ]]; then
             JSON=$(echo ${{ steps.transform_package_test_rules_file.outputs.output }} | jq -c)
           else
-            JSON=$(echo ${{ 'inputs.package_test_rules' }} | jq -c)
+            JSON=$(echo ${{ inputs.package_test_rules }} | jq -c)
           fi
 
           # Exclude debian:stretch because the LXC image is no longer available
