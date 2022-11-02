@@ -265,39 +265,31 @@ jobs:
 
       - name: Load cross build rules
         if: ${{ inputs.cross_build_rules_path != '' }}
-        uses: fabasoad/data-format-converter-action@v0.1.0
         id: transform_cross_build_rules_file
-        with:
-          input: ${{ inputs.cross_build_rules_path }}
-          from: yaml
-          to: json
+        run: |
+          ONE_LINE_JSON="$(yq -P '${{ inputs.cross_build_rules_path }}' -p=yaml -o=json | jq -c)"
+          echo "output='${ONE_LINE_JSON}'" >> $GITHUB_OUTPUT
 
       - name: Load Docker build rules
         if: ${{ inputs.docker_build_rules_path != '' }}
-        uses: fabasoad/data-format-converter-action@v0.1.0
         id: transform_docker_build_rules_file
-        with:
-          input: ${{ inputs.docker_build_rules_path }}
-          from: yaml
-          to: json
+        run: |
+          ONE_LINE_JSON="$(yq -P '${{ inputs.docker_build_rules_path }}' -p=yaml -o=json | jq -c)"
+          echo "output='${ONE_LINE_JSON}'" >> $GITHUB_OUTPUT
 
       - name: Load package build rules
         if: ${{ inputs.package_build_rules_path != '' }}
-        uses: fabasoad/data-format-converter-action@v0.1.0
         id: transform_package_build_rules_file
-        with:
-          input: ${{ inputs.package_build_rules_path }}
-          from: yaml
-          to: json
+        run: |
+          ONE_LINE_JSON="$(yq -P '${{ inputs.package_build_rules_path }}' -p=yaml -o=json | jq -c)"
+          echo "output='${ONE_LINE_JSON}'" >> $GITHUB_OUTPUT
 
       - name: Load packages test rules
         if: ${{ inputs.package_test_rules_path != '' }}
-        uses: fabasoad/data-format-converter-action@v0.1.0
         id: transform_package_test_rules_file
-        with:
-          input: ${{ inputs.package_test_rules_path }}
-          from: yaml
-          to: json
+        run: |
+          ONE_LINE_JSON="$(yq -P '${{ inputs.package_test_rules_path }}' -p=yaml -o=json | jq -c)"
+          echo "output='${ONE_LINE_JSON}'" >> $GITHUB_OUTPUT
 
       - name: Pre-process rules
         id: pre_process_rules
