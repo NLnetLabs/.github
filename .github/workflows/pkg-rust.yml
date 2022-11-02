@@ -1506,7 +1506,7 @@ jobs:
   # Logs in to Docker Hub using secrets configured in this GitHub repository.
   docker-manifest:
     needs: [prepare, docker]
-    if: ${{ contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' && needs.prepare.outputs.has_docker_secrets }}
+    if: ${{ needs.prepare.outputs.has_docker_secrets && (contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main') }}
     runs-on: ubuntu-20.04
     steps:
       - name: Log into Docker Hub
