@@ -268,7 +268,7 @@ jobs:
         uses: fabasoad/data-format-converter-action@v0.1.0
         id: transform_cross_build_rules_file
         with:
-          path: ${{ inputs.cross_build_rules_path }}
+          input: ${{ inputs.cross_build_rules_path }}
           from: yaml
           to: json
 
@@ -277,7 +277,7 @@ jobs:
         uses: fabasoad/data-format-converter-action@v0.1.0
         id: transform_docker_build_rules_file
         with:
-          path: ${{ inputs.docker_build_rules_path }}
+          input: ${{ inputs.docker_build_rules_path }}
           from: yaml
           to: json
 
@@ -286,7 +286,7 @@ jobs:
         uses: fabasoad/data-format-converter-action@v0.1.0
         id: transform_package_build_rules_file
         with:
-          path: ${{ inputs.package_build_rules_path }}
+          input: ${{ inputs.package_build_rules_path }}
           from: yaml
           to: json
 
@@ -295,7 +295,7 @@ jobs:
         uses: fabasoad/data-format-converter-action@v0.1.0
         id: transform_package_test_rules_file
         with:
-          path: ${{ inputs.package_test_rules_path }}
+          input: ${{ inputs.package_test_rules_path }}
           from: yaml
           to: json
 
