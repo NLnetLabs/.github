@@ -539,7 +539,8 @@ jobs:
       if: ${{ steps.verify.outputs.no-cross == 'false' }}
       uses: actions/checkout@v3
 
-    - name: Cache cargo cross
+    - name: Cache cargo cross if available
+      id: cache-cargo-cross
       if: ${{ steps.verify.outputs.no-cross == 'false' }}
       uses: actions/cache@v3
       with:
@@ -548,13 +549,15 @@ jobs:
           /home/runner/.cargo/bin/cross-util
         key: ${{ matrix.target }}-cargo-cross
 
+    - name: Install Cargo Cross if needed
+      if: ${{ steps.cache-cargo-cross.outputs.cache-hit != 'true' }}
+      run: |
+        cargo install cross
+
     - name: Cross compile
       if: ${{ steps.verify.outputs.no-cross == 'false' }}
-      uses: actions-rs/cargo@v1
-      with:
-        use-cross: true
-        command: build
-        args: --locked --release --target ${{ matrix.target }} ${{ inputs.cross_build_args }}
+      run: |
+        cross build --locked --release --target ${{ matrix.target }} ${{ inputs.cross_build_args }}
 
     - name: Tar the set of created binaries to upload
       if: ${{ steps.verify.outputs.no-cross == 'false' }}
