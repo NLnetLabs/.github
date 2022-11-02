@@ -1486,7 +1486,7 @@ jobs:
           path: /tmp/docker-${{ matrix.shortname }}-img.tar
 
       - name: Publish image to Docker Hub
-        if: ${{ contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' }}
+        if: ${{ needs.prepare.outputs.has_docker_secrets && contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' }}
         uses: docker/build-push-action@v3
         with:
           context: .
