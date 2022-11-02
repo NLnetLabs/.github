@@ -173,6 +173,16 @@ on:
         required: false
         type: string
         default: false
+      docker_context_path:
+        description: "Relative path to use as the Docker build context. Defaults to the root of the git clone, i.e. '.'."
+        required: false
+        type: string
+        default: '.'
+      docker_file_path:
+        description: "Relative path to the Dockerfile to build. Defaults to the Dockerfile in the root of the git clone, i.e. './Dockerfile'."
+        required: false
+        type: string
+        default: './Dockerfile'
       docker_build_rules:
         description: "A GitHub Actions matrix in JSON format with platform, shortname, crosstarget (required if mode is copy), mode (optional: build (default) or copy) and cargo_args (optional) fields."
         required: false
@@ -1444,7 +1454,8 @@ jobs:
       - name: Build Docker image ${{ steps.gen.outputs.image_name }}
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: ${{ inputs.docker_context_path }}
+          file: ${{ inputs.docker_file_path }}
           platforms: ${{ matrix.platform }}
           tags: ${{ steps.gen.outputs.image_name }}
           build-args: |
@@ -1481,7 +1492,8 @@ jobs:
         if: ${{ needs.prepare.outputs.has_docker_secrets && contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main' }}
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: ${{ inputs.docker_context_path }}
+          file: ${{ inputs.docker_file_path }}
           platforms: ${{ matrix.platform }}
           tags: ${{ steps.gen.outputs.image_name }}
           build-args: |
