@@ -351,7 +351,7 @@ jobs:
           echo "============================================================================="
           echo "Cross build rules:"
           echo "============================================================================="
-          JSON='${{ steps.pre_process_rules.outputs.cross_build_rules }}'
+          JSON=${{ steps.pre_process_rules.outputs.cross_build_rules }}
           if [[ "${JSON}" != "[]" && "${JSON}" != '["no-cross"]' ]]; then
             echo ${JSON} | jq
           else
