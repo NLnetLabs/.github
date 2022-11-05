@@ -282,53 +282,53 @@ jobs:
         if: ${{ inputs.cross_build_rules_path != '' }}
         id: transform_cross_build_rules_file
         run: |
-          ONE_LINE_JSON="$(yq -P '${{ inputs.cross_build_rules_path }}' -p=yaml -o=json | jq -c)"
+          ONE_LINE_JSON="$(yq -I=0 '${{ inputs.cross_build_rules_path }}' -p=yaml -o=json)"
           echo "output='${ONE_LINE_JSON}'" >> $GITHUB_OUTPUT
 
       - name: Load Docker build rules
         if: ${{ inputs.docker_build_rules_path != '' }}
         id: transform_docker_build_rules_file
         run: |
-          ONE_LINE_JSON="$(yq -P '${{ inputs.docker_build_rules_path }}' -p=yaml -o=json | jq -c)"
+          ONE_LINE_JSON="$(yq -I=0 '${{ inputs.docker_build_rules_path }}' -p=yaml -o=json)"
           echo "output='${ONE_LINE_JSON}'" >> $GITHUB_OUTPUT
 
       - name: Load package build rules
         if: ${{ inputs.package_build_rules_path != '' }}
         id: transform_package_build_rules_file
         run: |
-          ONE_LINE_JSON="$(yq -P '${{ inputs.package_build_rules_path }}' -p=yaml -o=json | jq -c)"
+          ONE_LINE_JSON="$(yq -I=0 '${{ inputs.package_build_rules_path }}' -p=yaml -o=json)"
           echo "output='${ONE_LINE_JSON}'" >> $GITHUB_OUTPUT
 
       - name: Load packages test rules
         if: ${{ inputs.package_test_rules_path != '' }}
         id: transform_package_test_rules_file
         run: |
-          ONE_LINE_JSON="$(yq -P '${{ inputs.package_test_rules_path }}' -p=yaml -o=json | jq -c)"
+          ONE_LINE_JSON="$(yq -I=0 '${{ inputs.package_test_rules_path }}' -p=yaml -o=json)"
           echo "output='${ONE_LINE_JSON}'" >> $GITHUB_OUTPUT
 
       - name: Pre-process rules
         id: pre_process_rules
         run: |
           if [[ "${{ inputs.cross_build_rules_path }}" != "" ]]; then
-            echo "cross_build_rules=$(echo ${{ steps.transform_cross_build_rules_file.outputs.output }} | jq -c)" >> $GITHUB_OUTPUT
+            echo "cross_build_rules=${{ steps.transform_cross_build_rules_file.outputs.output }}" >> $GITHUB_OUTPUT
           else
             echo "cross_build_rules=$(echo '${{ inputs.cross_build_rules }}' | jq -c)" >> $GITHUB_OUTPUT
           fi
 
           if [[ "${{ inputs.docker_build_rules_path }}" != "" ]]; then
-            echo "docker_build_rules=$(echo ${{ steps.transform_docker_build_rules_file.outputs.output }} | jq -c)" >> $GITHUB_OUTPUT
+            echo "docker_build_rules=${{ steps.transform_docker_build_rules_file.outputs.output }}" >> $GITHUB_OUTPUT
           else
             echo "docker_build_rules=$(echo '${{ inputs.docker_build_rules }}' | jq -c)" >> $GITHUB_OUTPUT
           fi
 
           if [[ "${{ inputs.package_build_rules_path }}" != "" ]]; then
-            echo "package_build_rules=$(echo ${{ steps.transform_package_build_rules_file.outputs.output }} | jq -c)" >> $GITHUB_OUTPUT
+            echo "package_build_rules=${{ steps.transform_package_build_rules_file.outputs.output }}" >> $GITHUB_OUTPUT
           else
-            echo "package_build_rules=$(echo '${{ inputs.package_build_rules }}' | jq -c)" >> $GITHUB_OUTPUT
+            echo "package_build_rules=$(echo '${{ inputs.package_build_rules }}' | yq -I=0 -p=yaml -o=json)" >> $GITHUB_OUTPUT
           fi
 
           if [[ "${{ inputs.package_test_rules_path }}" != "" ]]; then
-            JSON=$(echo ${{ steps.transform_package_test_rules_file.outputs.output }} | jq -c)
+            JSON=${{ steps.transform_package_test_rules_file.outputs.output }}
           else
             JSON=$(echo ${{ inputs.package_test_rules }} | jq -c)
           fi
@@ -600,7 +600,7 @@ jobs:
     # cross-compilation needs to happen above in its own non-containerized job).
     container: ${{ matrix.image }}
     strategy:
-      matrix: ${{ fromJSON(needs.prepare.outputs.package_build_rules) }}
+      matrix: ${{ needs.prepare.outputs.package_build_rules }}
     env:
       CARGO_DEB_VER: 1.38.4
       CARGO_GENERATE_RPM_VER: 0.8.0
