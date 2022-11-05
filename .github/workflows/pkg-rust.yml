@@ -310,7 +310,7 @@ jobs:
         id: pre_process_rules
         run: |
           if [[ "${{ inputs.cross_build_rules_path }}" != "" ]]; then
-            echo "cross_build_rules='${{ toJSON(steps.transform_cross_build_rules_file.outputs.output) }}'" >> $GITHUB_OUTPUT
+            echo "cross_build_rules=${{ toJSON(steps.transform_cross_build_rules_file.outputs.output) }}" >> $GITHUB_OUTPUT
           else
             echo "cross_build_rules=$(echo '${{ inputs.cross_build_rules }}' | jq -c)" >> $GITHUB_OUTPUT
           fi
@@ -530,7 +530,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        target: ${{ needs.prepare.outputs.cross_build_rules }}
+        target: ${{ fromJSON(needs.prepare.outputs.cross_build_rules) }}
     steps:
     - name: Verify inputs
       id: verify
