@@ -283,7 +283,7 @@ jobs:
         id: transform_cross_build_rules_file
         run: |
           ONE_LINE_JSON="$(yq -I=0 '${{ inputs.cross_build_rules_path }}' -p=yaml -o=json)"
-          echo "output=${ONE_LINE_JSON}" >> $GITHUB_OUTPUT
+          echo "output='${ONE_LINE_JSON}'" >> $GITHUB_OUTPUT
 
       - name: Load Docker build rules
         if: ${{ inputs.docker_build_rules_path != '' }}
@@ -351,7 +351,7 @@ jobs:
           echo "============================================================================="
           echo "Cross build rules:"
           echo "============================================================================="
-          JSON=${{ steps.pre_process_rules.outputs.cross_build_rules }}
+          JSON=${{ toJSON(steps.pre_process_rules.outputs.cross_build_rules) }}
           if [[ "${JSON}" != "[]" && "${JSON}" != '["no-cross"]' ]]; then
             echo ${JSON} | jq
           else
