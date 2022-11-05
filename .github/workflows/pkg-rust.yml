@@ -373,7 +373,7 @@ jobs:
           echo "============================================================================="
           echo "Package build rules:"
           echo "============================================================================="
-          JSON='${{ toJSON(fromJSON(steps.pre_process_rules.outputs.package_build_rules)) }}'
+          JSON='${{ steps.pre_process_rules.outputs.package_build_rules }}'
           if [[ "${JSON}" != "{}" ]]; then
             echo ${JSON} | jq
           else
@@ -600,7 +600,7 @@ jobs:
     # cross-compilation needs to happen above in its own non-containerized job).
     container: ${{ matrix.image }}
     strategy:
-      matrix: ${{ needs.prepare.outputs.package_build_rules }}
+      matrix: ${{ fromJSON(needs.prepare.outputs.package_build_rules) }}
     env:
       CARGO_DEB_VER: 1.38.4
       CARGO_GENERATE_RPM_VER: 0.8.0
