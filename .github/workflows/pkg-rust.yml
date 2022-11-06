@@ -278,60 +278,36 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Load cross build rules
-        if: ${{ inputs.cross_build_rules_path != '' }}
-        id: transform_cross_build_rules_file
-        run: |
-          echo "output<<EOF" >> $GITHUB_OUTPUT
-          yq '${{ inputs.cross_build_rules_path }}' -p=yaml -o=json >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Load Docker build rules
-        if: ${{ inputs.docker_build_rules_path != '' }}
-        id: transform_docker_build_rules_file
-        run: |
-          ONE_LINE_JSON="$(yq -I=0 '${{ inputs.docker_build_rules_path }}' -p=yaml -o=json)"
-          echo "output='${ONE_LINE_JSON}'" >> $GITHUB_OUTPUT
-
-      - name: Load package build rules
-        if: ${{ inputs.package_build_rules_path != '' }}
-        id: transform_package_build_rules_file
-        run: |
-          ONE_LINE_JSON="$(yq -I=0 '${{ inputs.package_build_rules_path }}' -p=yaml -o=json)"
-          echo "output='${ONE_LINE_JSON}'" >> $GITHUB_OUTPUT
-
-      - name: Load packages test rules
-        if: ${{ inputs.package_test_rules_path != '' }}
-        id: transform_package_test_rules_file
-        run: |
-          ONE_LINE_JSON="$(yq -I=0 '${{ inputs.package_test_rules_path }}' -p=yaml -o=json)"
-          echo "output='${ONE_LINE_JSON}'" >> $GITHUB_OUTPUT
-
       - name: Pre-process rules
         id: pre_process_rules
         run: |
-          echo "cross_build_rules<<EOCBR" >> $GITHUB_OUTPUT
-          if [[ "${{ inputs.cross_build_rules_path }}" != "" ]]; then
-            echo '${{ steps.transform_cross_build_rules_file.outputs.output }}' >> $GITHUB_OUTPUT
+          echo "cross_build_rules<<END_OF_CROSS_BUILD_RULES" >> $GITHUB_OUTPUT
+          if [[ '${{ inputs.cross_build_rules_path }}' != "" ]]; then
+            yq '${{ inputs.cross_build_rules_path }}' -p=yaml -o=json >> $GITHUB_OUTPUT
           else
             echo '${{ inputs.cross_build_rules }}' >> $GITHUB_OUTPUT
           fi
-          echo 'EOCBR' >> $GITHUB_OUTPUT
+          echo 'END_OF_CROSS_BUILD_RULES' >> $GITHUB_OUTPUT
 
-          if [[ "${{ inputs.docker_build_rules_path }}" != "" ]]; then
-            echo "docker_build_rules=${{ steps.transform_docker_build_rules_file.outputs.output }}" >> $GITHUB_OUTPUT
+          echo "docker_build_rules<<END_OF_DOCKER_BUILD_RULES" >> $GITHUB_OUTPUT
+          if [[ '${{ inputs.docker_build_rules_path }}' != "" ]]; then
+            yq '${{ inputs.docker_build_rules_path }}' -p=yaml -o=json >> $GITHUB_OUTPUT
           else
-            echo "docker_build_rules=$(echo '${{ inputs.docker_build_rules }}' | jq -c)" >> $GITHUB_OUTPUT
+            echo '${{ inputs.docker_build_rules }}' >> $GITHUB_OUTPUT
           fi
+          echo 'END_OF_DOCKER_BUILD_RULES' >> $GITHUB_OUTPUT
 
-          if [[ "${{ inputs.package_build_rules_path }}" != "" ]]; then
-            echo "package_build_rules=${{ steps.transform_package_build_rules_file.outputs.output }}" >> $GITHUB_OUTPUT
+          echo "package_build_rules<<END_OF_PACKAGE_BUILD_RULES" >> $GITHUB_OUTPUT
+          if [[ '${{ inputs.package_build_rules_path }}' != "" ]]; then
+            yq '${{ inputs.package_build_rules_path }}' -p=yaml -o=json >> $GITHUB_OUTPUT
           else
-            echo "package_build_rules=$(echo '${{ inputs.package_build_rules }}' | yq -I=0 -p=yaml -o=json)" >> $GITHUB_OUTPUT
+            echo '${{ inputs.package_build_rules }}' >> $GITHUB_OUTPUT
           fi
+          echo 'END_OF_PACKAGE_BUILD_RULES' >> $GITHUB_OUTPUT
 
-          if [[ "${{ inputs.package_test_rules_path }}" != "" ]]; then
-            JSON=${{ steps.transform_package_test_rules_file.outputs.output }}
+          echo "package_test_rules<<END_OF_PACKAGE_TEST_RULES" >> $GITHUB_OUTPUT
+          if [[ '${{ inputs.package_test_rules_path }}' != "" ]]; then
+            JSON=$(echo '${{ steps.transform_package_test_rules_file.outputs.output }} | jq -c)
           else
             JSON=$(echo ${{ inputs.package_test_rules }} | jq -c)
           fi
@@ -345,7 +321,8 @@ jobs:
               JSON="${MODIFIED_JSON}"
             fi
           fi
-          echo "package_test_rules=${JSON}" >> $GITHUB_OUTPUT
+          echo ${JSON} >> $GITHUB_OUTPUT
+          echo 'END_OF_PACKAGE_TEST_RULES' >> $GITHUB_OUTPUT
 
       - name: Print rules
         # Disable default use of bash -x for easier to read output in the log
@@ -365,9 +342,9 @@ jobs:
           echo "============================================================================="
           echo "Docker build rules:"
           echo "============================================================================="
-          JSON='${{ toJSON(fromJSON(steps.pre_process_rules.outputs.docker_build_rules)) }}'
+          JSON='${{ steps.pre_process_rules.outputs.docker_build_rules }}'
           if [[ "${JSON}" != "{}" ]]; then
-            echo ${JSON} | jq
+            echo '${{ steps.pre_process_rules.outputs.docker_build_rules }}'
           else
             echo None
           fi
@@ -378,7 +355,7 @@ jobs:
           echo "============================================================================="
           JSON='${{ steps.pre_process_rules.outputs.package_build_rules }}'
           if [[ "${JSON}" != "{}" ]]; then
-            echo ${{ steps.pre_process_rules.outputs.package_build_rules }}
+            echo '${{ steps.pre_process_rules.outputs.package_build_rules }}'
           else
             echo None
           fi
@@ -387,9 +364,9 @@ jobs:
           echo "============================================================================="
           echo "Packages test rules:"
           echo "============================================================================="
-          JSON='${{ toJSON(fromJSON(steps.pre_process_rules.outputs.package_test_rules)) }}'
+          JSON='${{ steps.pre_process_rules.outputs.package_test_rules }}'
           if [[ "${JSON}" != "{}" ]]; then
-            echo ${JSON} | jq
+            echo '${{ steps.pre_process_rules.outputs.package_test_rules }}'
           else
             echo None
           fi
