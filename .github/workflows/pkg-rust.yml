@@ -321,7 +321,7 @@ jobs:
               JSON="${MODIFIED_JSON}"
             fi
           fi
-          echo ${JSON} >> $GITHUB_OUTPUT
+          echo ${JSON} | jq >> $GITHUB_OUTPUT
           echo 'END_OF_PACKAGE_TEST_RULES' >> $GITHUB_OUTPUT
 
       - name: Print rules
