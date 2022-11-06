@@ -282,8 +282,9 @@ jobs:
         if: ${{ inputs.cross_build_rules_path != '' }}
         id: transform_cross_build_rules_file
         run: |
-          ONE_LINE_JSON="$(yq -I=0 '${{ inputs.cross_build_rules_path }}' -p=yaml -o=json)"
-          echo "output='${ONE_LINE_JSON}'" >> $GITHUB_OUTPUT
+          echo "output=<<EOF" >> $GITHUB_OUTPUT
+          yq '${{ inputs.cross_build_rules_path }}' -p=yaml -o=json >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Load Docker build rules
         if: ${{ inputs.docker_build_rules_path != '' }}
@@ -309,11 +310,13 @@ jobs:
       - name: Pre-process rules
         id: pre_process_rules
         run: |
+          echo "cross_build_rules=EOCBR" >> $GITHUB_OUTPUT
           if [[ "${{ inputs.cross_build_rules_path }}" != "" ]]; then
-            echo "cross_build_rules='${{ toJSON(steps.transform_cross_build_rules_file.outputs.output) }}'" >> $GITHUB_OUTPUT
+            echo '${{ steps.transform_cross_build_rules_file.outputs.output }}' >> $GITHUB_OUTPUT
           else
-            echo "cross_build_rules=$(echo '${{ inputs.cross_build_rules }}' | jq -c)" >> $GITHUB_OUTPUT
+            echo '${{ inputs.cross_build_rules }}' >> $GITHUB_OUTPUT
           fi
+          echo 'EOCBR' >> $GITHUB_OUTPUT
 
           if [[ "${{ inputs.docker_build_rules_path }}" != "" ]]; then
             echo "docker_build_rules=${{ steps.transform_docker_build_rules_file.outputs.output }}" >> $GITHUB_OUTPUT
@@ -530,7 +533,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        target: ${{ fromJSON(toJSON(needs.prepare.outputs.cross_build_rules)) }}
+        target: ${{ fromJSON(needs.prepare.outputs.cross_build_rules) }}
     steps:
     - name: Verify inputs
       id: verify
