@@ -130,17 +130,17 @@ on:
   workflow_call:
     inputs:
       cross_build_rules:
-        description: "A relative path to a YAML file, or a YAML string, containing a list of cross-compilation targets, e.g. arm-unknown-linux-musleabihf."
+        description: "A relative path to a YAML file, or a YAML string, containing a GitHub Actions matrix with field cross-compilation 'target's, e.g. arm-unknown-linux-musleabihf."
         required: false
         type: string
         default: '["no-cross"]'
       package_build_rules:
-        description: "A relative path to a YAML file, or a YAML string, containing a GitHub Actions matrix with pkg (your app name), image (Docker image <os>:<rel>), target (x86_64, or a Rust target triple), extra_build_args (optional), os (optional) fields and (optional) include list. See also: https://doc.rust-lang.org/nightly/rustc/platform-support.html"
+        description: "A relative path to a YAML file, or a YAML string, containing a GitHub Actions matrix with 'pkg' (your app name), Docker 'image' (image <os>:<rel>), 'target' (x86_64, or a Rust target triple), 'extra_build_args' (optional), 'os' (optional) fields. See also: https://doc.rust-lang.org/nightly/rustc/platform-support.html"
         required: false
         type: string
         default: '{}'
       package_test_rules:
-        description: "A relative path to a YAML file, or a YAML string, containing a GitHub Actions matrix with pkg (from package_build_rules), LXC image (<dist>:<rel>), target (from package_build_rules) and mode (fresh-install or upgrade-from-published). See also: https://uk.lxd.images.canonical.com/"
+        description: "A relative path to a YAML file, or a YAML string, containing a GitHub Actions matrix with 'pkg' (from package_build_rules), LXC 'image' (<dist>:<rel>), 'target' (from package_build_rules) and 'mode' (fresh-install or upgrade-from-published). See also: https://uk.lxd.images.canonical.com/"
         required: false
         type: string
         default: '{}'
@@ -489,8 +489,7 @@ jobs:
     needs: prepare
     runs-on: ubuntu-20.04
     strategy:
-      matrix:
-        target: ${{ fromJSON(needs.prepare.outputs.cross_build_rules) }}
+      matrix: ${{ fromJSON(needs.prepare.outputs.cross_build_rules) }}
     steps:
     - name: Verify inputs
       id: verify
