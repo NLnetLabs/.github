@@ -285,7 +285,7 @@ jobs:
           if [[ '${{ inputs.cross_build_rules_path }}' != "" ]]; then
             yq '${{ inputs.cross_build_rules_path }}' -p=yaml -o=json >> $GITHUB_OUTPUT
           else
-            echo '${{ inputs.cross_build_rules }}' >> $GITHUB_OUTPUT
+            echo '${{ inputs.cross_build_rules }}' | yq -p=yaml -o=json >> $GITHUB_OUTPUT
           fi
           echo 'END_OF_CROSS_BUILD_RULES' >> $GITHUB_OUTPUT
 
@@ -293,7 +293,7 @@ jobs:
           if [[ '${{ inputs.docker_build_rules_path }}' != "" ]]; then
             yq '${{ inputs.docker_build_rules_path }}' -p=yaml -o=json >> $GITHUB_OUTPUT
           else
-            echo '${{ inputs.docker_build_rules }}' >> $GITHUB_OUTPUT
+            echo '${{ inputs.docker_build_rules }}' | yq -p=yaml -o=json >> $GITHUB_OUTPUT
           fi
           echo 'END_OF_DOCKER_BUILD_RULES' >> $GITHUB_OUTPUT
 
@@ -301,7 +301,7 @@ jobs:
           if [[ '${{ inputs.package_build_rules_path }}' != "" ]]; then
             yq '${{ inputs.package_build_rules_path }}' -p=yaml -o=json >> $GITHUB_OUTPUT
           else
-            echo '${{ inputs.package_build_rules }}' >> $GITHUB_OUTPUT
+            echo '${{ inputs.package_build_rules }}' | yq -p=yaml -o=json >> $GITHUB_OUTPUT
           fi
           echo 'END_OF_PACKAGE_BUILD_RULES' >> $GITHUB_OUTPUT
 
@@ -309,7 +309,7 @@ jobs:
           if [[ '${{ inputs.package_test_rules_path }}' != "" ]]; then
             JSON=$(echo '${{ steps.transform_package_test_rules_file.outputs.output }}' | jq -c)
           else
-            JSON=$(echo '${{ inputs.package_test_rules }}' | jq -c)
+            echo '${{ inputs.package_test_rules }}' | yq -p=yaml -o=json >> $GITHUB_OUTPUT
           fi
 
           # Exclude debian:stretch because the LXC image is no longer available
