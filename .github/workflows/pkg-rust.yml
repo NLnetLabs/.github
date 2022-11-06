@@ -282,7 +282,7 @@ jobs:
         if: ${{ inputs.cross_build_rules_path != '' }}
         id: transform_cross_build_rules_file
         run: |
-          echo "output=<<EOF" >> $GITHUB_OUTPUT
+          echo "output<<EOF" >> $GITHUB_OUTPUT
           yq '${{ inputs.cross_build_rules_path }}' -p=yaml -o=json >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
@@ -310,7 +310,7 @@ jobs:
       - name: Pre-process rules
         id: pre_process_rules
         run: |
-          echo "cross_build_rules=EOCBR" >> $GITHUB_OUTPUT
+          echo "cross_build_rules<<EOCBR" >> $GITHUB_OUTPUT
           if [[ "${{ inputs.cross_build_rules_path }}" != "" ]]; then
             echo '${{ steps.transform_cross_build_rules_file.outputs.output }}' >> $GITHUB_OUTPUT
           else
