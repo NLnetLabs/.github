@@ -307,7 +307,7 @@ jobs:
 
           echo "package_test_rules<<END_OF_PACKAGE_TEST_RULES" >> $GITHUB_OUTPUT
           if [[ '${{ inputs.package_test_rules_path }}' != "" ]]; then
-            JSON=$(yq '${{ inputs.package_build_rules_path }}' -I=0 -p=yaml -o=json)
+            JSON=$(yq '${{ inputs.package_test_rules_path }}' -I=0 -p=yaml -o=json)
           else
             JSON=$(echo '${{ inputs.package_test_rules }}' | yq -I=0 -p=yaml -o=json)
           fi
