@@ -262,7 +262,7 @@ jobs:
         id: pre_process_rules
         run: |
           echo "cross_build_rules<<END_OF_CROSS_BUILD_RULES" >> $GITHUB_OUTPUT
-          if [[ -f '${{ inputs.cross_build_rules }} ]]; then
+          if [[ -f '${{ inputs.cross_build_rules }}' ]]; then
             yq '${{ inputs.cross_build_rules }}' -p=yaml -o=json >> $GITHUB_OUTPUT
           else
             echo '${{ inputs.cross_build_rules }}' | yq -p=yaml -o=json >> $GITHUB_OUTPUT
@@ -270,7 +270,7 @@ jobs:
           echo 'END_OF_CROSS_BUILD_RULES' >> $GITHUB_OUTPUT
 
           echo "docker_build_rules<<END_OF_DOCKER_BUILD_RULES" >> $GITHUB_OUTPUT
-          if [[ -f '${{ inputs.docker_build_rules }} ]]; then
+          if [[ -f '${{ inputs.docker_build_rules }}' ]]; then
             yq '${{ inputs.docker_build_rules }}' -p=yaml -o=json >> $GITHUB_OUTPUT
           else
             echo '${{ inputs.docker_build_rules }}' | yq -p=yaml -o=json >> $GITHUB_OUTPUT
@@ -278,7 +278,7 @@ jobs:
           echo 'END_OF_DOCKER_BUILD_RULES' >> $GITHUB_OUTPUT
 
           echo "package_build_rules<<END_OF_PACKAGE_BUILD_RULES" >> $GITHUB_OUTPUT
-          if [[ -f '${{ inputs.package_build_rules }} ]]; then
+          if [[ -f '${{ inputs.package_build_rules }}' ]]; then
             yq '${{ inputs.package_build_rules }}' -p=yaml -o=json >> $GITHUB_OUTPUT
           else
             echo '${{ inputs.package_build_rules }}' | yq -p=yaml -o=json >> $GITHUB_OUTPUT
