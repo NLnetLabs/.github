@@ -130,7 +130,7 @@ on:
   workflow_call:
     inputs:
       cross_build_rules:
-        description: "A JSON array of cross-compilation targets, e.g. [ 'arm-unknown-linux-musleabihf', 'armv7-unknown-linux-musleabihf' ]"
+        description: "A YAML list of cross-compilation targets, e.g. arm-unknown-linux-musleabihf"
         required: false
         type: string
         default: '["no-cross"]'
@@ -140,7 +140,7 @@ on:
         type: string
         default: ''
       package_build_rules:
-        description: "A GitHub Actions matrix in JSON format with pkg (your app name), image (Docker image <os>:<rel>), target (x86_64, or a Rust target triple), extra_build_args (optional), os (optional) fields and (optional) include list. See also: https://doc.rust-lang.org/nightly/rustc/platform-support.html"
+        description: "A GitHub Actions matrix in YAML format with pkg (your app name), image (Docker image <os>:<rel>), target (x86_64, or a Rust target triple), extra_build_args (optional), os (optional) fields and (optional) include list. See also: https://doc.rust-lang.org/nightly/rustc/platform-support.html"
         required: false
         type: string
         default: '{}'
@@ -150,7 +150,7 @@ on:
         type: string
         default: ''
       package_test_rules:
-        description: "A GitHub Actions matrix in JSON format with pkg (from package_build_rules), LXC image (<dist>:<rel>), target (from package_build_rules) and mode (fresh-install or upgrade-from-published). See also: https://uk.lxd.images.canonical.com/"
+        description: "A GitHub Actions matrix in YAML format with pkg (from package_build_rules), LXC image (<dist>:<rel>), target (from package_build_rules) and mode (fresh-install or upgrade-from-published). See also: https://uk.lxd.images.canonical.com/"
         required: false
         type: string
         default: '{}'
@@ -307,9 +307,9 @@ jobs:
 
           echo "package_test_rules<<END_OF_PACKAGE_TEST_RULES" >> $GITHUB_OUTPUT
           if [[ '${{ inputs.package_test_rules_path }}' != "" ]]; then
-            JSON=$(echo '${{ steps.transform_package_test_rules_file.outputs.output }} | jq -c)
+            JSON="'"$(echo '${{ steps.transform_package_test_rules_file.outputs.output }}' | jq -c)"'"
           else
-            JSON=$(echo ${{ inputs.package_test_rules }} | jq -c)
+            JSON="'"$(echo '${{ inputs.package_test_rules }}' | jq -c)"'"
           fi
 
           # Exclude debian:stretch because the LXC image is no longer available
