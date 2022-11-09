@@ -318,9 +318,7 @@ jobs:
           if [ "${ALL_TARGETS}" == '[]' ]; then
             echo '{}' >> $GITHUB_OUTPUT
           else
-            echo '{ "target": ' >> $GITHUB_OUTPUT
-            echo ${ALL_TARGETS} | jq
-            echo '}' >> $GITHUB_OUTPUT
+            echo '{ "target": ' ${ALL_TARGETS} '}' | jq >> $GITHUB_OUTPUT
           fi
           echo 'END_OF_TARGETS' >> $GITHUB_OUTPUT
 
