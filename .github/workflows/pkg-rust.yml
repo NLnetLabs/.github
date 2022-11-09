@@ -133,8 +133,7 @@ on:
         description: "A relative path to a YAML file, or a YAML string, containing a GitHub Actions matrix with field cross-compilation 'target's, e.g. arm-unknown-linux-musleabihf."
         required: false
         type: string
-        default: |
-          target: ['no-cross']
+        default: '{}'
       package_build_rules:
         description: "A relative path to a YAML file, or a YAML string, containing a GitHub Actions matrix with 'pkg' (your app name), Docker 'image' (image <os>:<rel>), 'target' (x86_64, or a Rust target triple), 'extra_build_args' (optional), 'os' (optional) fields. See also: https://doc.rust-lang.org/nightly/rustc/platform-support.html"
         required: false
@@ -487,6 +486,7 @@ jobs:
   #
   # See: https://github.com/rust-embedded/cross#docker-in-docker
   cross:
+    if: ${{ needs.prepare.outputs.cross_build_rules != '{}' }}
     needs: prepare
     runs-on: ubuntu-20.04
     strategy:
