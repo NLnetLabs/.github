@@ -333,17 +333,16 @@ jobs:
           echo PKG_TARGETS
           echo ${PKG_TARGETS}
 
-          ALL_TARGETS=$(echo ${LEGACY_DOCKER_TARGETS} ${DOCKER_TARGETS} ${PKG_TARGETS} | jq -s 'flatten | unique | .[]')
-          JOINED_TARGETS=$(IFS=, ; echo "${ALL_TARGETS[*]}")
+          ALL_TARGETS=$(echo ${LEGACY_DOCKER_TARGETS} ${DOCKER_TARGETS} ${PKG_TARGETS} | jq -s 'flatten | unique')
 
-          echo JOINED_TARGETS
-          echo "${JOINED_TARGETS}"
+          echo ALL_TARGETS
+          echo "${ALL_TARGETS}"
 
           echo "matrix<<END_OF_TARGETS" >> $GITHUB_OUTPUT
-          if [ "${JOINED_TARGETS}" == '' ]; then
+          if [ "${ALL_TARGETS}" == '[]' ]; then
             echo '{}' >> $GITHUB_OUTPUT
           else
-            echo '{ "target": ['${JOINED_TARGETS}'] }' >> $GITHUB_OUTPUT
+            echo '{ "target": '${ALL_TARGETS}' }' >> $GITHUB_OUTPUT
           fi
           echo 'END_OF_TARGETS' >> $GITHUB_OUTPUT
 
