@@ -130,7 +130,7 @@ on:
   workflow_call:
     inputs:
       cross_build_rules:
-        description: "A relative path to a YAML file, or a YAML string, containing a GitHub Actions matrix with field cross-compilation 'target's, e.g. arm-unknown-linux-musleabihf."
+        description: "Deprecated. Required cross compilation targets are automatically determined from the other inputs."
         required: false
         type: string
         default: '{}'
@@ -169,7 +169,7 @@ on:
         type: string
         default: './Dockerfile'
       docker_build_rules:
-        description: "A relative path to a YAML file, or a YAML string, containing a GitHub Actions matrix with platform, shortname, crosstarget (required if mode is copy), mode (optional: build (default) or copy) and cargo_args (optional) fields."
+        description: "A relative path to a YAML file, or a YAML string, containing a GitHub Actions matrix with platform, shortname, target (required if mode is copy), mode (optional: build (default) or copy) and cargo_args (optional) fields."
         required: false
         type: string
         default: '{}'
@@ -250,7 +250,7 @@ jobs:
       all_repo_and_tag_pairs: ${{ steps.encode.outputs.all_repo_and_tag_pairs }}
       first_repo_and_tag_pair: ${{ steps.encode.outputs.first_repo_and_tag_pair }}
       lower_docker_org: ${{ steps.encode.outputs.lower_docker_org }}
-      cross_build_rules: ${{ steps.pre_process_rules.outputs.cross_build_rules }}
+      cross_build_rules: ${{ steps.determine_cross_build_rules.outputs.matrix }}
       docker_build_rules: ${{ steps.pre_process_rules.outputs.docker_build_rules }}
       package_build_rules: ${{ steps.pre_process_rules.outputs.package_build_rules }}
       package_test_rules: ${{ steps.pre_process_rules.outputs.package_test_rules }}
@@ -304,6 +304,32 @@ jobs:
           echo ${JSON} | jq >> $GITHUB_OUTPUT
           echo 'END_OF_PACKAGE_TEST_RULES' >> $GITHUB_OUTPUT
 
+      - name: Determine cross build rules
+        id: determine_cross_build_rules
+        run: |
+          LEGACY_DOCKER_TARGETS='"${{ join(fromJSON(steps.pre_process_rules.outputs.docker_build_rules).*.crosstarget, '","') }}"'
+          DOCKER_TARGETS='"${{ join(fromJSON(steps.pre_process_rules.outputs.docker_build_rules).*.target, '","') }}"'
+          PKG_TARGETS='"${{ join(fromJSON(steps.pre_process_rules.outputs.package_build_rules).*.target, '","') }}"'
+
+          echo LEGACY_DOCKER_TARGETS
+          echo ${LEGACY_DOCKER_TARGETS}
+
+          echo DOCKER_TARGETS
+          echo ${DOCKER_TARGETS}
+
+          echo PKG_TARGETS
+          echo ${PKG_TARGETS}
+
+          ALL_TARGETS=(${LEGACY_DOCKER_TARGETS} ${DOCKER_TARGETS}) ${PKG_TARGETS})
+          JOINED_TARGETS=$(IFS=, ; echo "${ALL_TARGETS[*]}")
+
+          echo JOINED_TARGETS
+          echo "${JOINED_TARGETS}"
+
+          echo "matrix=<<END_OF_TARGETS" >> $GITHUB_OUTPUT
+          echo '{ "target": ['${JOINED_TARGETS}'] }' >> $GITHUB_OUTPUT
+          echo 'END_OF_TARGETS' >> $GITHUB_OUTPUT
+
       - name: Print rules
         # Disable default use of bash -x for easier to read output in the log
         shell: bash
@@ -311,9 +337,9 @@ jobs:
           echo "============================================================================="
           echo "Cross build rules:"
           echo "============================================================================="
-          JSON='${{ steps.pre_process_rules.outputs.cross_build_rules }}'
+          JSON='${{ steps.determine_cross_build_rules.outputs.matrix }}'
           if [[ "${JSON}" != "{}" ]]; then
-            echo '${{ steps.pre_process_rules.outputs.cross_build_rules }}'
+            echo '${{ steps.determine_cross_build_rules.outputs.matrix }}'
           else
             echo None
           fi
@@ -1395,7 +1421,7 @@ jobs:
         if: ${{ steps.verify.outputs.mode == 'copy' }}
         uses: actions/download-artifact@v3
         with:
-          name: tmp-cross-binaries-${{ matrix.crosstarget }}
+          name: tmp-cross-binaries-${{ matrix.target }}
           # The file downloaded to dockerbin/xxx will be used by the Dockerfile
           # Note: matrix.platform here has to match the Docker BuildX $TARGETPLATFORM variable available while building
           # the Dockerfile, e.g. linux/amd64.
