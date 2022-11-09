@@ -320,7 +320,7 @@ jobs:
           echo PKG_TARGETS
           echo ${PKG_TARGETS}
 
-          ALL_TARGETS=(${LEGACY_DOCKER_TARGETS} ${DOCKER_TARGETS}) ${PKG_TARGETS})
+          ALL_TARGETS=(${LEGACY_DOCKER_TARGETS} ${DOCKER_TARGETS} ${PKG_TARGETS})
           JOINED_TARGETS=$(IFS=, ; echo "${ALL_TARGETS[*]}")
 
           echo JOINED_TARGETS
