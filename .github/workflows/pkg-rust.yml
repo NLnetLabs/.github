@@ -133,7 +133,7 @@ on:
         description: "Deprecated. Required cross compilation targets are automatically determined from the other inputs."
         required: false
         type: string
-        default: '{}'
+        default: ''
       package_build_rules:
         description: "A relative path to a YAML file, or a YAML string, containing a GitHub Actions matrix with 'pkg' (your app name), Docker 'image' (image <os>:<rel>), 'target' (x86_64, or a Rust target triple), 'extra_build_args' (optional), 'os' (optional) fields. See also: https://doc.rust-lang.org/nightly/rustc/platform-support.html"
         required: false
@@ -261,20 +261,18 @@ jobs:
       - name: Pre-process rules
         id: pre_process_rules
         run: |
-          echo "cross_build_rules<<END_OF_CROSS_BUILD_RULES" >> $GITHUB_OUTPUT
-          if [[ -f '${{ inputs.cross_build_rules }}' ]]; then
-            yq '${{ inputs.cross_build_rules }}' -p=yaml -o=json >> $GITHUB_OUTPUT
-          else
-            echo '${{ inputs.cross_build_rules }}' | yq -p=yaml -o=json >> $GITHUB_OUTPUT
+          if [[ '${{ inputs.cross_build_rules }}' != '' ]]; then
+            echo "::warning::The 'cross_build_rules' input is deprecated. Cross build targets will be determined automatically."
           fi
-          echo 'END_OF_CROSS_BUILD_RULES' >> $GITHUB_OUTPUT
 
           echo "docker_build_rules<<END_OF_DOCKER_BUILD_RULES" >> $GITHUB_OUTPUT
           if [[ -f '${{ inputs.docker_build_rules }}' ]]; then
-            yq '${{ inputs.docker_build_rules }}' -p=yaml -o=json >> $GITHUB_OUTPUT
+            JSON=$(yq '${{ inputs.docker_build_rules }}' -I=0 -p=yaml -o=json)
           else
-            echo '${{ inputs.docker_build_rules }}' | yq -p=yaml -o=json >> $GITHUB_OUTPUT
+            JSON=$(echo '${{ inputs.docker_build_rules }}' | yq -I=0 -p=yaml -o=json)
           fi
+          JSON=$(echo $JSON | jq '(.. | select(has("crosstarget")?)) |= with_entries(if .key == "crosstarget" then .key = "target" else . end)')
+          echo ${JSON} | jq >> $GITHUB_OUTPUT
           echo 'END_OF_DOCKER_BUILD_RULES' >> $GITHUB_OUTPUT
 
           echo "package_build_rules<<END_OF_PACKAGE_BUILD_RULES" >> $GITHUB_OUTPUT
@@ -308,16 +306,13 @@ jobs:
         id: determine_cross_build_rules
         run: |
           JSON='${{ steps.pre_process_rules.outputs.docker_build_rules }}'
-          LEGACY_DOCKER_TARGETS=$(echo $JSON | jq '.. | .crosstarget? | select(. != null)')
-
-          JSON='${{ steps.pre_process_rules.outputs.docker_build_rules }}'
           DOCKER_TARGETS=$(echo $JSON | jq '.. | .target? | select(. != null)')
 
           JSON='${{ steps.pre_process_rules.outputs.package_build_rules }}'
           PKG_TARGETS=$(echo $JSON | jq '.. | .target? | select(. != null)')
 
           # This is a bit ridiculous invoking jq three times... there must be an easier way
-          ALL_TARGETS=$(echo ${LEGACY_DOCKER_TARGETS} ${DOCKER_TARGETS} ${PKG_TARGETS} | jq -s 'flatten | unique | .[] | select(. != "x86_64")' | jq -s)
+          ALL_TARGETS=$(echo ${DOCKER_TARGETS} ${PKG_TARGETS} | jq -s 'flatten | unique | .[] | select(. != "x86_64")' | jq -s)
 
           echo "matrix<<END_OF_TARGETS" >> $GITHUB_OUTPUT
           if [ "${ALL_TARGETS}" == '[]' ]; then
