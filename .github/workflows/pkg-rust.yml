@@ -307,9 +307,12 @@ jobs:
       - name: Determine cross build rules
         id: determine_cross_build_rules
         run: |
-          LEGACY_DOCKER_TARGETS=$(echo ${{ steps.pre_process_rules.outputs.docker_build_rules }} | jq '.. | .crosstarget? | select(. != null)')
-          DOCKER_TARGETS=$(echo ${{ steps.pre_process_rules.outputs.docker_build_rules }} | jq '.. | .target? | select(. != null)')
-          PKG_TARGETS=$(echo ${{ steps.pre_process_rules.outputs.package_build_rules }} | jq '.. | .target? | select(. != null)')
+          JSON='${{ steps.pre_process_rules.outputs.docker_build_rules }}'
+          LEGACY_DOCKER_TARGETS=$(echo $JSON | jq '.. | .crosstarget? | select(. != null)')
+          JSON='${{ steps.pre_process_rules.outputs.docker_build_rules }}'
+          LEGACY_DOCKER_TARGETS=$(echo $JSON | jq '.. | .target? | select(. != null)')
+          JSON='${{ steps.pre_process_rules.outputs.package_build_rules }}'
+          PKG_TARGETS=$(echo $JSON | jq '.. | .target? | select(. != null)')
 
           if [ "${LEGACY_DOCKER_TARGETS}" == '""' ]; then
             LEGACY_DOCKER_TARGETS=
