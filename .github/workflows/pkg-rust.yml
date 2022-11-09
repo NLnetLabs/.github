@@ -333,7 +333,8 @@ jobs:
           echo PKG_TARGETS
           echo ${PKG_TARGETS}
 
-          ALL_TARGETS=$(echo ${LEGACY_DOCKER_TARGETS} ${DOCKER_TARGETS} ${PKG_TARGETS} | jq -s 'flatten | unique | .[] | select(. != "x86_64") | [.]')
+          # This is a bit ridiculous invoking jq three times... there must be an easier way
+          ALL_TARGETS=$(echo ${LEGACY_DOCKER_TARGETS} ${DOCKER_TARGETS} ${PKG_TARGETS} | jq -s 'flatten | unique | .[] | select(. != "x86_64")' | jq -s)
 
           echo ALL_TARGETS
           echo "${ALL_TARGETS}"
