@@ -308,11 +308,11 @@ jobs:
         id: determine_cross_build_rules
         run: |
           JSON='${{ steps.pre_process_rules.outputs.docker_build_rules }}'
-          LEGACY_DOCKER_TARGETS=$(echo $JSON | jq '.. | .crosstarget? | select(. != null) | jq -s 'flatten | unique'')
+          LEGACY_DOCKER_TARGETS=$(echo $JSON | jq '.. | .crosstarget? | select(. != null)' | jq -s 'flatten | unique')
           JSON='${{ steps.pre_process_rules.outputs.docker_build_rules }}'
-          DOCKER_TARGETS=$(echo $JSON | jq '.. | .target? | select(. != null) | jq -s 'flatten | unique'')
+          DOCKER_TARGETS=$(echo $JSON | jq '.. | .target? | select(. != null)' | jq -s 'flatten | unique')
           JSON='${{ steps.pre_process_rules.outputs.package_build_rules }}'
-          PKG_TARGETS=$(echo $JSON | jq '.. | .target? | select(. != null) | jq -s 'flatten | unique'')
+          PKG_TARGETS=$(echo $JSON | jq '.. | .target? | select(. != null)' | jq -s 'flatten | unique')
 
           if [ "${LEGACY_DOCKER_TARGETS}" == '""' ]; then
             LEGACY_DOCKER_TARGETS=
