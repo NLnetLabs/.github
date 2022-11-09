@@ -311,6 +311,16 @@ jobs:
           DOCKER_TARGETS='"${{ join(fromJSON(steps.pre_process_rules.outputs.docker_build_rules).*.target, '","') }}"'
           PKG_TARGETS='"${{ join(fromJSON(steps.pre_process_rules.outputs.package_build_rules).*.target, '","') }}"'
 
+          if [ "${LEGACY_DOCKER_TARGETS}" == '""' ]; then
+            LEGACY_DOCKER_TARGETS=
+          fi
+          if [ "${DOCKER_TARGETS}" == '""' ]; then
+            LEGACY_DOCKER_TARGETS=
+          fi
+          if [ "${LEGACY_DOCKER_TARGETS}" == '""' ]; then
+            PKG_TARGETS=
+          fi
+
           echo LEGACY_DOCKER_TARGETS
           echo ${LEGACY_DOCKER_TARGETS}
 
