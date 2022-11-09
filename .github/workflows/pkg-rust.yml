@@ -552,6 +552,7 @@ jobs:
   #   - https://github.com/mmstick/cargo-deb
   #   - https://github.com/cat-in-136/cargo-generate-rpm
   pkg:
+    # Use of always() here ensures that even if the cross job is skipped we will still run
     if: ${{ always() && needs.prepare.outputs.package_build_rules != '{}' }}
     needs: [cross, prepare]
     runs-on: ubuntu-latest
