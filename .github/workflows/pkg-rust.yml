@@ -315,9 +315,9 @@ jobs:
             LEGACY_DOCKER_TARGETS=
           fi
           if [ "${DOCKER_TARGETS}" == '""' ]; then
-            LEGACY_DOCKER_TARGETS=
+            DOCKER_TARGETS=
           fi
-          if [ "${LEGACY_DOCKER_TARGETS}" == '""' ]; then
+          if [ "${PKG_TARGETS}" == '""' ]; then
             PKG_TARGETS=
           fi
 
