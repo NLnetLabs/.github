@@ -492,22 +492,11 @@ jobs:
     strategy:
       matrix: ${{ fromJSON(needs.prepare.outputs.cross_build_rules) }}
     steps:
-    - name: Verify inputs
-      id: verify
-      run: |
-        if [[ "${{ matrix.target }}" == "no-cross" ]]; then
-          echo "no-cross=true" >> $GITHUB_OUTPUT
-        else
-          echo "no-cross=false" >> $GITHUB_OUTPUT
-        fi
-
     - name: Checkout repository
-      if: ${{ steps.verify.outputs.no-cross == 'false' }}
       uses: actions/checkout@v3
 
     - name: Cache cargo cross if available
       id: cache-cargo-cross
-      if: ${{ steps.verify.outputs.no-cross == 'false' }}
       uses: actions/cache@v3
       with:
         path: |
@@ -516,17 +505,15 @@ jobs:
         key: ${{ matrix.target }}-cargo-cross
 
     - name: Install Cargo Cross if needed
-      if: ${{ steps.verify.outputs.no-cross == 'false' && steps.cache-cargo-cross.outputs.cache-hit != 'true' }}
+      if: ${{ steps.cache-cargo-cross.outputs.cache-hit != 'true' }}
       run: |
         cargo install cross
 
     - name: Cross compile
-      if: ${{ steps.verify.outputs.no-cross == 'false' }}
       run: |
         cross build --locked --release -v --target ${{ matrix.target }} ${{ inputs.cross_build_args }}
 
     - name: Tar the set of created binaries to upload
-      if: ${{ steps.verify.outputs.no-cross == 'false' }}
       run: |
         rm -f bins.tar
         find target/${{ matrix.target }}/release/ -maxdepth 1 -type f -executable | xargs tar vpcf bins.tar
@@ -538,7 +525,6 @@ jobs:
     # artifacts to be packaged by the scripts that upload to packages.nlnetlabs.nl we prefix the artifact name with
     # `tmp-` which will be ignored by packages.nlnetlabs.nl scripts.
     - name: Upload built binaries
-      if: ${{ steps.verify.outputs.no-cross == 'false' }}
       uses: actions/upload-artifact@v3
       with:
         name: tmp-cross-binaries-${{ matrix.target }}
