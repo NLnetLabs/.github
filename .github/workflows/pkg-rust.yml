@@ -552,7 +552,7 @@ jobs:
   #   - https://github.com/mmstick/cargo-deb
   #   - https://github.com/cat-in-136/cargo-generate-rpm
   pkg:
-    if: ${{ needs.prepare.outputs.package_build_rules != '{}' }}
+    if: ${{ always() && needs.prepare.outputs.package_build_rules != '{}' }}
     needs: [cross, prepare]
     runs-on: ubuntu-latest
     # Build on the platform we are targeting in order to avoid https://github.com/rust-lang/rust/issues/57497.
