@@ -664,6 +664,8 @@ jobs:
     # Install Rust the hard way rather than using a GH Action because the action doesn't work inside a Docker container.
     - name: Install Rust
       run: |
+        trap 'kill -term %1 SIGINT
+
         case ${OS_NAME} in
           debian|ubuntu)
             apt-get update
@@ -679,6 +681,8 @@ jobs:
 
     - name: Install compilation and other dependencies
       run: |
+        trap 'kill -term %1 SIGINT
+
         case ${OS_NAME} in
           debian|ubuntu)
             apt-get install -y binutils build-essential jq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
@@ -1192,6 +1196,8 @@ jobs:
     - name: Prepare container
       shell: bash
       run: |
+        trap 'kill -term %1 SIGINT
+
         echo "Waiting for cloud-init.."
         while ! sudo lxc exec testcon -- ls -la /var/lib/cloud/data/result.json; do
           sleep 1s
