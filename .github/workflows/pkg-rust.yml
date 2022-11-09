@@ -1355,10 +1355,11 @@ jobs:
   # NOTE: If you extend the set of matrix includes in this job you must also extend the call to docker manifest create
   # in the docker-manifest job below.
   docker:
-    if: ${{ needs.prepare.outputs.docker_build_rules != '{}' }}
+    # Use of always() here ensures that even if the cross job is skipped we will still run
+    if: ${{ always() && needs.prepare.outputs.docker_build_rules != '{}' }}
+    needs: [cross, prepare]
     outputs:
       published: ${{ steps.publish.conclusion == 'success' }}
-    needs: [cross, prepare]
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
