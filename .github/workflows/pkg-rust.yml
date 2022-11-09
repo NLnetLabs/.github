@@ -337,7 +337,11 @@ jobs:
           echo "${JOINED_TARGETS}"
 
           echo "matrix<<END_OF_TARGETS" >> $GITHUB_OUTPUT
-          echo '{ "target": ['${JOINED_TARGETS}'] }' >> $GITHUB_OUTPUT
+          if [ "${JOINED_TARGETS}" == '' ]; then
+            echo '{}' >> $GITHUB_OUTPUT
+          else
+            echo '{ "target": ['${JOINED_TARGETS}'] }' >> $GITHUB_OUTPUT
+          fi
           echo 'END_OF_TARGETS' >> $GITHUB_OUTPUT
 
       - name: Print rules
