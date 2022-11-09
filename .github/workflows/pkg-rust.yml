@@ -326,7 +326,7 @@ jobs:
           echo JOINED_TARGETS
           echo "${JOINED_TARGETS}"
 
-          echo "matrix=<<END_OF_TARGETS" >> $GITHUB_OUTPUT
+          echo "matrix<<END_OF_TARGETS" >> $GITHUB_OUTPUT
           echo '{ "target": ['${JOINED_TARGETS}'] }' >> $GITHUB_OUTPUT
           echo 'END_OF_TARGETS' >> $GITHUB_OUTPUT
 
