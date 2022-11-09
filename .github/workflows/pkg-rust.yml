@@ -130,7 +130,7 @@ on:
   workflow_call:
     inputs:
       cross_build_rules:
-        description: "Deprecated. Required cross compilation targets are automatically determined from the other inputs."
+        description: "This input is deprecated. Cross build targets will be determined automatically."
         required: false
         type: string
         default: ''
