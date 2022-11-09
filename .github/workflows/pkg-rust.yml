@@ -309,35 +309,15 @@ jobs:
         run: |
           JSON='${{ steps.pre_process_rules.outputs.docker_build_rules }}'
           LEGACY_DOCKER_TARGETS=$(echo $JSON | jq '.. | .crosstarget? | select(. != null)')
+
           JSON='${{ steps.pre_process_rules.outputs.docker_build_rules }}'
           DOCKER_TARGETS=$(echo $JSON | jq '.. | .target? | select(. != null)')
+
           JSON='${{ steps.pre_process_rules.outputs.package_build_rules }}'
           PKG_TARGETS=$(echo $JSON | jq '.. | .target? | select(. != null)')
 
-          if [ "${LEGACY_DOCKER_TARGETS}" == '""' ]; then
-            LEGACY_DOCKER_TARGETS=
-          fi
-          if [ "${DOCKER_TARGETS}" == '""' ]; then
-            DOCKER_TARGETS=
-          fi
-          if [ "${PKG_TARGETS}" == '""' ]; then
-            PKG_TARGETS=
-          fi
-
-          echo LEGACY_DOCKER_TARGETS
-          echo ${LEGACY_DOCKER_TARGETS}
-
-          echo DOCKER_TARGETS
-          echo ${DOCKER_TARGETS}
-
-          echo PKG_TARGETS
-          echo ${PKG_TARGETS}
-
           # This is a bit ridiculous invoking jq three times... there must be an easier way
           ALL_TARGETS=$(echo ${LEGACY_DOCKER_TARGETS} ${DOCKER_TARGETS} ${PKG_TARGETS} | jq -s 'flatten | unique | .[] | select(. != "x86_64")' | jq -s)
-
-          echo ALL_TARGETS
-          echo "${ALL_TARGETS}"
 
           echo "matrix<<END_OF_TARGETS" >> $GITHUB_OUTPUT
           if [ "${ALL_TARGETS}" == '[]' ]; then
