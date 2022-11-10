@@ -189,6 +189,16 @@ on:
         required: false
         type: string
         default: ''
+      deb_apt_key_url:
+        description: "When upgrading from a previously published package, this is the URL to the published repository key. Defaults to the NLnet Labs repository key."
+        required: false
+        type: string
+        default: 'https://packages.nlnetlabs.nl/aptkey.asc'
+      deb_apt_source:
+        description: "When upgrading from a previously published package, this is a line of text to write to an APT sources file. Defaults to the NLnet Labs repository. Can use ${OS_NAME} and ${OS_REL} placeholders."
+        required: false
+        type: string
+        default: 'deb [arch=amd64] https://packages.nlnetlabs.nl/linux/${OS_NAME}/ ${OS_REL} main'
 
       cross_build_args:
         description: "Extra arguments to cargo build when cross-compiling, e.g. `--features static-openssl`."
@@ -1218,9 +1228,9 @@ jobs:
       run: |
         case ${OS_NAME} in
           debian|ubuntu)
-            echo "deb [arch=amd64] https://packages.nlnetlabs.nl/linux/${OS_NAME}/ ${OS_REL} main" >$HOME/nlnetlabs.list
+            echo "${{ inputs.deb_apt_source }}" >$HOME/nlnetlabs.list
             sg lxd -c "lxc file push $HOME/nlnetlabs.list testcon/etc/apt/sources.list.d/"
-            sg lxd -c "lxc exec testcon -- wget -q https://packages.nlnetlabs.nl/aptkey.asc"
+            sg lxd -c "lxc exec testcon -- wget -q ${{ inputs.deb_apt_key_url }} -Oaptkey.asc"
             sg lxd -c "lxc exec testcon -- apt-key add ./aptkey.asc"
             sg lxd -c "lxc exec testcon -- apt-get -y update"
             sg lxd -c "lxc exec testcon -- apt-get install -y ${{ matrix.pkg }}"
