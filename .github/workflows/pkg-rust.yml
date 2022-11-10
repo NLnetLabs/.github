@@ -1082,7 +1082,9 @@ jobs:
   # actual deployment targets, nor do GH runners support all targets that we want to test. Don't test in Docker
   # containers as they do not support systemd.
   pkg-test:
-    if: ${{ needs.prepare.outputs.package_test_rules != '{}' }}
+    # Use of always() here ensures that even if the _cross_ job (note: not the 'pkg') is skipped we will still run.
+    # I wouldn't expect this to be needed but since the cross job was made conditional we seem to need this.
+    if: ${{ always() && needs.prepare.outputs.package_test_rules != '{}' }}
     needs: [pkg, prepare]
     runs-on: ubuntu-20.04
     strategy:
