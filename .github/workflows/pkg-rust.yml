@@ -652,7 +652,6 @@ jobs:
             apt-get install -y curl
             ;;
           centos)
-            yum update -y
             ;;
         esac
 
@@ -663,13 +662,12 @@ jobs:
       run: |
         case ${OS_NAME} in
           debian|ubuntu)
-            apt-get install -y binutils build-essential jq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
+            apt-get install -y binutils gcc jq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
             ;;
           centos)
+            sed -i -e 's/enabled=1/enabled=0/' /etc/yum/pluginconf.d/fastestmirror.conf || true
             yum install epel-release -y
-            yum update -y
-            yum install -y jq rpmlint ${{ inputs.rpm_extra_build_packages }}
-            yum groupinstall -y "Development Tools"
+            yum install -y findutils gcc jq rpmlint ${{ inputs.rpm_extra_build_packages }}
             ;;
         esac
 
@@ -1190,7 +1188,6 @@ jobs:
               # see: https://stackoverflow.com/a/70930049
               sg lxd -c "lxc exec testcon -- sed -i -e 's|mirrorlist=|#mirrorlist=|g' -e 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Linux-*"
             fi
-            sg lxd -c "lxc exec testcon -- yum update -y"
             sg lxd -c "lxc exec testcon -- yum install -y man"
             ;;
         esac
