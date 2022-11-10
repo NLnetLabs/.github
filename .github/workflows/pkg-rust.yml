@@ -226,9 +226,12 @@ on:
         required: false
 
     outputs:
-      docker_published:
+      docker_images_published:
         description: "Whether publishing of Docker images was done or not."
         value: ${{ jobs.docker.outputs.published }}
+      docker_manifest_published:
+        description: "Whether publishing of the Docker manifest was done or not."
+        value: ${{ jobs.docker-manifest.outputs.published }}
 
 defaults:
   run:
@@ -410,7 +413,7 @@ jobs:
           fi
 
       - name: Verify Docker credentials
-        if: ${{ steps.pre_process_rules.outputs.docker_build_rules != '{}' && steps.verify_inputs.outputs.has_docker_secrets == true }}
+        if: ${{ steps.pre_process_rules.outputs.docker_build_rules != '{}' && fromJSON(steps.verify_inputs.outputs.has_docker_secrets) == true }}
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_ID }}
@@ -1468,7 +1471,7 @@ jobs:
           docker run --rm ${{ steps.gen.outputs.image_name }} ${{ inputs.docker_sanity_check_command }}
 
       - name: Log into Docker Hub
-        if: ${{ needs.prepare.outputs.has_docker_secrets == true }}
+        if: ${{ fromJSON(needs.prepare.outputs.has_docker_secrets) == true }}
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_ID }}
@@ -1483,7 +1486,7 @@ jobs:
 
       - name: Publish image to Docker Hub
         id: publish
-        if: ${{ needs.prepare.outputs.has_docker_secrets == true && (contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main') }}
+        if: ${{ fromJSON(needs.prepare.outputs.has_docker_secrets) == true && (contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main') }}
         uses: docker/build-push-action@v3
         with:
           context: ${{ inputs.docker_context_path }}
@@ -1504,7 +1507,9 @@ jobs:
   # Logs in to Docker Hub using secrets configured in this GitHub repository.
   docker-manifest:
     needs: [prepare, docker]
-    if: ${{ needs.prepare.outputs.has_docker_secrets == true && (contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main') }}
+    outputs:
+      published: ${{ steps.publish.conclusion == 'success' }}
+    if: ${{ fromJSON(needs.prepare.outputs.has_docker_secrets) == true && (contains(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main') }}
     runs-on: ubuntu-20.04
     steps:
       - name: Log into Docker Hub
@@ -1547,6 +1552,7 @@ jobs:
           done
 
       - name: Publish multi-arch image manifest(s) to Docker Hub
+        id: publish
         run: |
           LOWER_DOCKER_ORG="${{ steps.decode.outputs.lower_docker_org }}"
           for REPO_AND_TAG in ${{ steps.decode.outputs.repo_and_tag_pairs }}; do
