@@ -1248,7 +1248,7 @@ jobs:
               echo '${{ inputs.deb_apt_source }}' >$HOME/ploutos.list
               sg lxd -c "lxc file push $HOME/ploutos.list testcon/etc/apt/sources.list.d/"
             fi
-            sg lxd -c "lxc exec testcon -- sed -i -e 's/\${OS_NAME}/${OS_NAME}/g' -e 's/\${OS_REL/${OS_REL}/g' /etc/apt/sources.list.d/ploutos.list"
+            sg lxd -c "lxc exec testcon -- sed -i -e 's/\${OS_NAME}/${OS_NAME}/g' -e 's/\${OS_REL}/${OS_REL}/g' /etc/apt/sources.list.d/ploutos.list"
             sg lxd -c "lxc exec testcon -- wget -q ${{ inputs.deb_apt_key_url }} -Oaptkey.asc"
             sg lxd -c "lxc exec testcon -- apt-key add ./aptkey.asc"
             sg lxd -c "lxc exec testcon -- apt-get -y update"
@@ -1279,7 +1279,7 @@ jobs:
               echo '${{ inputs.rpm_yum_repo }}' >$HOME/ploutos.repo
               sg lxd -c "lxc file push $HOME/ploutos.repo testcon/etc/yum.repos.d/"
             fi
-            sg lxd -c "lxc exec testcon -- sed -i -e 's/\${OS_NAME}/${OS_NAME}/g' -e 's/\${OS_REL/${OS_REL}/g' /etc/yum.repos.d/ploutos.repo"
+            sg lxd -c "lxc exec testcon -- sed -i -e 's/\${OS_NAME}/${OS_NAME}/g' -e 's/\${OS_REL}/${OS_REL}/g' /etc/yum.repos.d/ploutos.repo"
             sg lxd -c "lxc exec testcon -- rpm --import ${{ inputs.rpm_yum_key_url }}"
             sg lxd -c "lxc exec testcon -- yum install -y ${{ matrix.pkg }}"
             ;;
