@@ -665,7 +665,7 @@ jobs:
       run: |
         case ${OS_NAME} in
           debian|ubuntu)
-            apt-get install -y binutils gcc jq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
+            apt-get install -y binutils gcc dpkg-dev jq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
             ;;
           centos)
             sed -i -e 's/enabled=1/enabled=0/' /etc/yum/pluginconf.d/fastestmirror.conf || true
