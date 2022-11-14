@@ -585,7 +585,8 @@ jobs:
   pkg:
     # Use of always() here ensures that even if the cross job is skipped we will still run
     if: ${{ always() && needs.prepare.outputs.package_build_rules != '{}' }}
-    needs: [cross, prepare]
+    # needs: [cross, prepare]
+    needs: prepare
     runs-on: ubuntu-latest
     # Build on the platform we are targeting in order to avoid https://github.com/rust-lang/rust/issues/57497.
     # Specifying container causes all of the steps in this job to run inside a Docker container (which is why the
@@ -755,10 +756,14 @@ jobs:
 
     - name: Download cross compiled binaries
       if: ${{ matrix.target != 'x86_64' }}
-      uses: actions/download-artifact@v3
+      uses: Wandelen/wretry.action@v1
       with:
-        name: tmp-cross-binaries-${{ matrix.target }}
-        path: .
+        action: actions/download-artifact@v3
+        with: |
+          name: tmp-cross-binaries-${{ matrix.target }}
+          path: .
+        attempt_limit: 120
+        attempt_delay: 5000
   
     - name: Untar the set of downloaded binaries
       if: ${{ matrix.target != 'x86_64' }}
