@@ -690,12 +690,12 @@ jobs:
       run: |
         case ${OS_NAME} in
           debian|ubuntu)
-            apt-get install -y binutils gcc dpkg-dev jq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
+            apt-get install -y binutils gcc dpkg-dev git jq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
             ;;
           centos)
             sed -i -e 's/enabled=1/enabled=0/' /etc/yum/pluginconf.d/fastestmirror.conf || true
             yum install epel-release -y
-            yum install -y findutils gcc jq rpmlint ${{ inputs.rpm_extra_build_packages }}
+            yum install -y findutils gcc git jq rpmlint ${{ inputs.rpm_extra_build_packages }}
             ;;
         esac
 
