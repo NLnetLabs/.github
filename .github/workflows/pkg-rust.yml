@@ -690,12 +690,18 @@ jobs:
       run: |
         case ${OS_NAME} in
           debian|ubuntu)
-            apt-get install -y binutils gcc dpkg-dev jq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+            chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+            apt-get update
+            apt-get install -y binutils dpkg-dev gcc gh jq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
             ;;
           centos)
             sed -i -e 's/enabled=1/enabled=0/' /etc/yum/pluginconf.d/fastestmirror.conf || true
             yum install epel-release -y
-            yum install -y findutils gcc jq rpmlint ${{ inputs.rpm_extra_build_packages }}
+            yum install 'dnf-command(config-manager)'
+            yum config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+            yum install -y findutils gcc gh jq rpmlint ${{ inputs.rpm_extra_build_packages }}
             ;;
         esac
 
