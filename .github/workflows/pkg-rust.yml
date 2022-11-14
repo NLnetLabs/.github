@@ -690,12 +690,12 @@ jobs:
       run: |
         case ${OS_NAME} in
           debian|ubuntu)
-            apt-get install -y binutils gcc dpkg-dev git jq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
+            apt-get install -y binutils gcc dpkg-dev jq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
             ;;
           centos)
             sed -i -e 's/enabled=1/enabled=0/' /etc/yum/pluginconf.d/fastestmirror.conf || true
             yum install epel-release -y
-            yum install -y findutils gcc git jq rpmlint ${{ inputs.rpm_extra_build_packages }}
+            yum install -y findutils gcc jq rpmlint ${{ inputs.rpm_extra_build_packages }}
             ;;
         esac
 
@@ -754,16 +754,24 @@ jobs:
             ;;
         esac
 
+    - name: Wait for cross compilation
+      if: ${{ matrix.target != 'x86_64' }}
+      run: |
+        MAX_RETRIES=120
+        DELAY_SECS=5
+        RETRY_N=1
+        while [ $RETRY_N -lt $MAX_RETRIES ]; do
+          gh run download ${{ github.run_id }} --name tmp-cross-binaries-${{ matrix.target }} && exit 0
+          RETRY_N=$(( $RETRY_N + 1 ))
+          sleep $DELAY_SECS
+        done
+        exit 1
+
     - name: Download cross compiled binaries
       if: ${{ matrix.target != 'x86_64' }}
-      uses: Wandalen/wretry.action@v1.0.36
       with:
-        action: actions/download-artifact@v3
-        with: |
-          name: tmp-cross-binaries-${{ matrix.target }}
-          path: .
-        attempt_limit: 120
-        attempt_delay: 5000
+        name: tmp-cross-binaries-${{ matrix.target }}
+        path: .
   
     - name: Untar the set of downloaded binaries
       if: ${{ matrix.target != 'x86_64' }}
