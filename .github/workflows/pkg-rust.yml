@@ -699,7 +699,7 @@ jobs:
             ;;
           centos)
             sed -i -e 's/enabled=1/enabled=0/' /etc/yum/pluginconf.d/fastestmirror.conf || true
-            yum install -yepel-release
+            yum install -y epel-release
             yum install -y 'dnf-command(config-manager)'
             yum config-manager --add-repo http://cli.github.com/packages/rpm/gh-cli.repo
             yum install -y findutils gcc gh jq rpmlint ${{ inputs.rpm_extra_build_packages }}
