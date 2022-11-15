@@ -697,6 +697,7 @@ jobs:
             apt-get update
             apt-get install -y binutils dpkg-dev gcc gh jq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
             ;;
+
           centos)
             sed -i -e 's/enabled=1/enabled=0/' /etc/yum/pluginconf.d/fastestmirror.conf || true
             yum install -y epel-release
@@ -704,6 +705,7 @@ jobs:
               7)
                 yum install -y yum-utils
                 yum-config-manager --add-repo=https://cli.github.com/packages/rpm/gh-cli.repo
+                ;;
                 
               8)
                 yum install -y 'dnf-command(config-manager)'
