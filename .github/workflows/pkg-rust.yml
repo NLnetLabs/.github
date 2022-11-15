@@ -759,7 +759,7 @@ jobs:
       uses: yogeshlonkar/wait-for-jobs@v0
       with:
         gh-token: ${{ secrets.GITHUB_TOKEN }}
-        jobs: cross
+        jobs: cross (${{ matrix.target }})
         interval: 30000
         ttl: 10
 
