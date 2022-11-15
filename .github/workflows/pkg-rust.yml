@@ -763,6 +763,8 @@ jobs:
 
     - name: Wait for cross compilation
       if: ${{ matrix.target != 'x86_64' }}
+      env:
+        GH_TOKEN: ${{ github.token }}
       run: |
         MAX_RETRIES=120
         DELAY_SECS=5
