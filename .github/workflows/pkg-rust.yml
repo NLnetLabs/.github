@@ -531,7 +531,7 @@ jobs:
   #
   # See: https://github.com/rust-embedded/cross#docker-in-docker
   cross:
-    name: cross
+    name: cross-${{ matrix.target }}
     if: ${{ needs.prepare.outputs.cross_build_rules != '{}' }}
     needs: prepare
     runs-on: ubuntu-20.04
@@ -760,7 +760,7 @@ jobs:
       uses: yogeshlonkar/wait-for-jobs@v0
       with:
         gh-token: ${{ secrets.GITHUB_TOKEN }}
-        jobs: cross
+        jobs: cross-${{ matrix.target }}
         interval: 30000
         ttl: 10
 
