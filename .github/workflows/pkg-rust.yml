@@ -759,7 +759,6 @@ jobs:
       if: ${{ matrix.target != 'x86_64' }}
       uses: actions/github-script@v6
       with:
-        result-encoding: string
         retries: 3
         retry-exempt-status-codes: 400,401
         script: |
