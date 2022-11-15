@@ -695,7 +695,7 @@ jobs:
             curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=./githubcli-archive-keyring.gpg
             apt-key add ./githubcli-archive-keyring.gpg
             apt-get update
-            apt-get install -y binutils dpkg-dev gcc ghjq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
+            apt-get install -y binutils dpkg-dev gcc gh jq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
             ;;
           centos)
             sed -i -e 's/enabled=1/enabled=0/' /etc/yum/pluginconf.d/fastestmirror.conf || true
