@@ -694,14 +694,14 @@ jobs:
             curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=./githubcli-archive-keyring.gpg
             apt-key add ./githubcli-archive-keyring.gpg
             apt-get update
-            apt-get install -y binutils dpkg-dev gcc gh jq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
+            apt-get install -y binutils dpkg-dev gcc gh gnupg jq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
             ;;
           centos)
             sed -i -e 's/enabled=1/enabled=0/' /etc/yum/pluginconf.d/fastestmirror.conf || true
             yum install epel-release -y
             yum install 'dnf-command(config-manager)'
             yum config-manager --add-repo http://cli.github.com/packages/rpm/gh-cli.repo
-            yum install -y findutils gcc gh jq rpmlint ${{ inputs.rpm_extra_build_packages }}
+            yum install -y findutils gcc gh gpg jq rpmlint ${{ inputs.rpm_extra_build_packages }}
             ;;
         esac
 
