@@ -754,6 +754,11 @@ jobs:
             ;;
         esac
 
+    - name: Sleep
+      uses: juliangruber/sleep-action@v1
+      with:
+        time: 120s
+
     - name: Wait for cross-compilation
       id: waitcross
       if: ${{ matrix.target != 'x86_64' }}
