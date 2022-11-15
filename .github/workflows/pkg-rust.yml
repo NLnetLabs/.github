@@ -779,8 +779,9 @@ jobs:
         MAX_RETRIES=120
         DELAY_SECS=5
         RETRY_N=1
+        REPO=${{ github.repository }}
         while [ $RETRY_N -lt $MAX_RETRIES ]; do
-          gh run download ${{ github.run_id }} --name tmp-cross-binaries-${{ matrix.target }} && exit 0
+          gh run download ${{ github.run_id }} --repo $REPO --name tmp-cross-binaries-${{ matrix.target }} && exit 0
           RETRY_N=$(( $RETRY_N + 1 ))
           sleep $DELAY_SECS
         done
