@@ -755,6 +755,7 @@ jobs:
         esac
 
     - name: Wait for cross-compilation
+      id: waitcross
       if: ${{ matrix.target != 'x86_64' }}
       uses: actions/github-script@v6
       with:
@@ -762,11 +763,15 @@ jobs:
         retries: 3
         retry-exempt-status-codes: 400,401
         script: |
-          console.log(github.rest.actions.listWorkflowRunArtifacts({
+          github.rest.actions.listWorkflowRunArtifacts({
             owner: context.repo.owner,
             repo: context.repo.repo,
             run_id: ${{ github.run_id }},
-          }));
+          });
+
+    - name: Debug
+      if: ${{ matrix.target != 'x86_64' }}
+      run: echo "${{steps.waitcross.outputs.result}}"
 
     - name: Download cross-compiled binaries
       if: ${{ matrix.target != 'x86_64' }}
