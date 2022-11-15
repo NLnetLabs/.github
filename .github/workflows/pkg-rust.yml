@@ -690,29 +690,12 @@ jobs:
       run: |
         case ${OS_NAME} in
           debian|ubuntu)
-            apt-get install -y apt-transport-https gnupg 
-            echo "deb https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=./githubcli-archive-keyring.gpg
-            apt-key add ./githubcli-archive-keyring.gpg
-            apt-get update
-            apt-get install -y binutils dpkg-dev gcc gh jq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
+            apt-get install -y binutils gcc dpkg-dev jq lintian pkg-config ${{ inputs.deb_extra_build_packages }}
             ;;
-
           centos)
             sed -i -e 's/enabled=1/enabled=0/' /etc/yum/pluginconf.d/fastestmirror.conf || true
-            yum install -y epel-release
-            case ${OS_REL} in
-              7)
-                yum install -y yum-utils
-                yum-config-manager --add-repo=https://cli.github.com/packages/rpm/gh-cli.repo
-                ;;
-                
-              8)
-                yum install -y 'dnf-command(config-manager)'
-                yum config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
-                ;;
-            esac
-            yum install -y findutils gcc gh jq rpmlint ${{ inputs.rpm_extra_build_packages }}
+            yum install epel-release -y
+            yum install -y findutils gcc jq rpmlint ${{ inputs.rpm_extra_build_packages }}
             ;;
         esac
 
@@ -771,28 +754,19 @@ jobs:
             ;;
         esac
 
-    - name: Wait for cross compilation
-      if: ${{ matrix.target != 'x86_64' }}
-      env:
-        GH_TOKEN: ${{ github.token }}
-      run: |
-        MAX_RETRIES=120
-        DELAY_SECS=5
-        RETRY_N=1
-        REPO=${{ github.repository }}
-        while [ $RETRY_N -lt $MAX_RETRIES ]; do
-          gh run download ${{ github.run_id }} --repo $REPO --name tmp-cross-binaries-${{ matrix.target }} && exit 0
-          RETRY_N=$(( $RETRY_N + 1 ))
-          sleep $DELAY_SECS
-        done
-        exit 1
-
     - name: Download cross compiled binaries
       if: ${{ matrix.target != 'x86_64' }}
-      uses: actions/download-artifact@v3
+      uses: actions/github-script@v6
       with:
-        name: tmp-cross-binaries-${{ matrix.target }}
-        path: .
+        result-encoding: string
+        retries: 3
+        retry-exempt-status-codes: 400,401
+        script: |
+          github.rest.actions.listWorkflowRunArtifacts({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            run_id: github.run_id,
+          });
   
     - name: Untar the set of downloaded binaries
       if: ${{ matrix.target != 'x86_64' }}
