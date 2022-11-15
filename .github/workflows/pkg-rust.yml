@@ -763,9 +763,9 @@ jobs:
         retry-exempt-status-codes: 400,401
         script: |
           github.rest.actions.listWorkflowRunArtifacts({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            run_id: github.run_id,
+            owner: ${{ github.repository_owner }},
+            repo: ${{ github.repository }},
+            run_id: ${{ github.run_id }},
           });
   
     - name: Untar the set of downloaded binaries
