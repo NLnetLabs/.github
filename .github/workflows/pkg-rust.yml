@@ -543,7 +543,6 @@ jobs:
   #
   # See: https://github.com/rust-embedded/cross#docker-in-docker
   cross:
-    name: cross-${{ matrix.target }}
     if: ${{ needs.prepare.outputs.cross_build_rules != '{}' }}
     needs: prepare
     runs-on: ubuntu-20.04
@@ -566,9 +565,6 @@ jobs:
       if: ${{ steps.cache-cargo-cross.outputs.cache-hit != 'true' }}
       run: |
         cargo install cross
-
-    - name: Go slow while testing
-      run: sleep 75s
 
     - name: Cross compile
       run: |
@@ -601,7 +597,6 @@ jobs:
   pkg:
     # Use of always() here ensures that even if the cross job is skipped we will still run
     if: ${{ always() && needs.prepare.outputs.package_build_rules != '{}' }}
-    # needs: [cross, prepare]
     needs: prepare
     runs-on: ubuntu-latest
     # Build on the platform we are targeting in order to avoid https://github.com/rust-lang/rust/issues/57497.
