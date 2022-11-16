@@ -760,7 +760,7 @@ jobs:
 
     - name: Download cross-compiled binaries
       if: ${{ matrix.target != 'x86_64' }}
-      uses: ximon18/download-artifact@a76002bf051c84e958e35e7f526f6f6e1b6f6e01
+      uses: ximon18/download-artifact@testing
       with:
         name: tmp-cross-binaries-${{ matrix.target }}
         path: .
