@@ -755,18 +755,9 @@ jobs:
             ;;
         esac
 
-    - name: Wait for cross-compilation
-      if: ${{ matrix.target != 'x86_64' }}
-      uses: yogeshlonkar/wait-for-jobs@v0
-      with:
-        gh-token: ${{ secrets.GITHUB_TOKEN }}
-        jobs: cross-${{ matrix.target }}
-        interval: 30000
-        ttl: 10
-
     - name: Download cross-compiled binaries
       if: ${{ matrix.target != 'x86_64' }}
-      uses: actions/download-artifact@v3
+      uses: ximon18/download-artifact@testing
       with:
         name: tmp-cross-binaries-${{ matrix.target }}
         path: .
