@@ -134,6 +134,11 @@ on:
         required: false
         type: string
         default: ''
+      cross_max_wait_mins:
+        description: "The maximum number of minutes the pkg and/or docker builds will wait for the cross-compiled artifact to become available. Defaults to 10 minutes."
+        required: false
+        type: string
+        default: '10'
       package_build_rules:
         description: "A relative path to a YAML file, or a YAML string, containing a GitHub Actions matrix with 'pkg' (your app name), Docker 'image' (image <os>:<rel>), 'target' (x86_64, or a Rust target triple), 'extra_build_args' (optional), 'os' (optional) fields. See also: https://doc.rust-lang.org/nightly/rustc/platform-support.html"
         required: false
@@ -278,6 +283,8 @@ jobs:
       first_repo_and_tag_pair: ${{ steps.encode.outputs.first_repo_and_tag_pair }}
       lower_docker_org: ${{ steps.encode.outputs.lower_docker_org }}
       cross_build_rules: ${{ steps.determine_cross_build_rules.outputs.matrix }}
+      cross_max_wait_ms: ${{ steps.determine_cross_build_rules.outputs.max_wait_ms }}
+      cross_retry_delay_ms: ${{ steps.determine_cross_build_rules.outputs.retry_delay_ms }}
       docker_build_rules: ${{ steps.pre_process_rules.outputs.docker_build_rules }}
       package_build_rules: ${{ steps.pre_process_rules.outputs.package_build_rules }}
       package_test_rules: ${{ steps.pre_process_rules.outputs.package_test_rules }}
@@ -348,6 +355,10 @@ jobs:
             echo '{ "target": ' ${ALL_TARGETS} '}' | jq >> $GITHUB_OUTPUT
           fi
           echo 'END_OF_TARGETS' >> $GITHUB_OUTPUT
+
+          RETRY_DELAY_MS=30000
+          echo "retry_delay_ms=${RETRY_DELAY_MS}"
+          echo "max_wait_ms=" $(( ( ${{ inputs.cross_max_wait_mins }} * 60 * 1000) / ${RETRY_DELAY_MS} ))
 
       - name: Print rules
         # Disable default use of bash -x for easier to read output in the log
@@ -764,8 +775,8 @@ jobs:
       with:
         name: tmp-cross-binaries-${{ matrix.target }}
         path: .
-        maxTries: 20
-        retryDelayMs: 30000
+        maxTries: ${{ needs.prepare.outputs.cross_max_wait_ms }}
+        retryDelayMs: ${{ needs.prepare.outputs.cross_retry_delay_ms }}
   
     - name: Untar the set of downloaded binaries
       if: ${{ matrix.target != 'x86_64' }}
@@ -1459,8 +1470,8 @@ jobs:
           # Note: matrix.platform here has to match the Docker BuildX $TARGETPLATFORM variable available while building
           # the Dockerfile, e.g. linux/amd64.
           path: dockerbin/${{ matrix.platform }}
-          maxTries: 20
-          retryDelayMs: 30000
+          maxTries: ${{ needs.prepare.outputs.cross_max_wait_ms }}
+          retryDelayMs: ${{ needs.prepare.outputs.cross_retry_delay_ms }}
 
       - name: Untar the set of downloaded binaries
         if: ${{ steps.verify.outputs.mode == 'copy' }}
