@@ -555,6 +555,9 @@ jobs:
       run: |
         cargo install cross
 
+    - name: Go slow while testing
+      run: sleep 75s
+
     - name: Cross compile
       run: |
         cross build --locked --release -v --target ${{ matrix.target }} ${{ inputs.cross_build_args }}
