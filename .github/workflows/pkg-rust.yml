@@ -283,7 +283,7 @@ jobs:
       first_repo_and_tag_pair: ${{ steps.encode.outputs.first_repo_and_tag_pair }}
       lower_docker_org: ${{ steps.encode.outputs.lower_docker_org }}
       cross_build_rules: ${{ steps.determine_cross_build_rules.outputs.matrix }}
-      cross_max_wait_ms: ${{ steps.determine_cross_build_rules.outputs.max_wait_ms }}
+      cross_max_tries: ${{ steps.determine_cross_build_rules.outputs.max_tries }}
       cross_retry_delay_ms: ${{ steps.determine_cross_build_rules.outputs.retry_delay_ms }}
       docker_build_rules: ${{ steps.pre_process_rules.outputs.docker_build_rules }}
       package_build_rules: ${{ steps.pre_process_rules.outputs.package_build_rules }}
@@ -357,9 +357,9 @@ jobs:
           echo 'END_OF_TARGETS' >> $GITHUB_OUTPUT
 
           RETRY_DELAY_MS=30000
-          MAX_WAIT_MS=$(( ( ${{ inputs.cross_max_wait_mins }} * 60 * 1000 ) / ${RETRY_DELAY_MS} ))
+          MAX_TRIES=$(( ( ${{ inputs.cross_max_wait_mins }} * 60 * 1000 ) / ${RETRY_DELAY_MS} ))
           echo "retry_delay_ms=${RETRY_DELAY_MS}" >> $GITHUB_OUTPUT
-          echo "max_wait_ms=${MAX_WAIT_MS}" >> $GITHUB_OUTPUT
+          echo "max_tries=${MAX_TRIES}" >> $GITHUB_OUTPUT
 
       - name: Print rules
         # Disable default use of bash -x for easier to read output in the log
@@ -776,7 +776,7 @@ jobs:
       with:
         name: tmp-cross-binaries-${{ matrix.target }}
         path: .
-        maxTries: ${{ needs.prepare.outputs.cross_max_wait_ms }}
+        maxTries: ${{ needs.prepare.outputs.cross_max_tries }}
         retryDelayMs: ${{ needs.prepare.outputs.cross_retry_delay_ms }}
   
     - name: Untar the set of downloaded binaries
@@ -1471,7 +1471,7 @@ jobs:
           # Note: matrix.platform here has to match the Docker BuildX $TARGETPLATFORM variable available while building
           # the Dockerfile, e.g. linux/amd64.
           path: dockerbin/${{ matrix.platform }}
-          maxTries: ${{ needs.prepare.outputs.cross_max_wait_ms }}
+          maxTries: ${{ needs.prepare.outputs.cross_max_tries }}
           retryDelayMs: ${{ needs.prepare.outputs.cross_retry_delay_ms }}
 
       - name: Untar the set of downloaded binaries
