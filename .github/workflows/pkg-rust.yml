@@ -1452,7 +1452,7 @@ jobs:
 
       - name: Download cross compiled binaries
         if: ${{ steps.verify.outputs.mode == 'copy' }}
-        uses: actions/download-artifact@v3
+        uses: ximon18/download-artifact@v3
         with:
           name: tmp-cross-binaries-${{ matrix.target }}
           # The file downloaded to dockerbin/xxx will be used by the Dockerfile
