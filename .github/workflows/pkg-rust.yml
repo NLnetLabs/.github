@@ -764,6 +764,8 @@ jobs:
       with:
         name: tmp-cross-binaries-${{ matrix.target }}
         path: .
+        maxTries: 20
+        retryDelayMs: 30000
   
     - name: Untar the set of downloaded binaries
       if: ${{ matrix.target != 'x86_64' }}
