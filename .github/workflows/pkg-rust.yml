@@ -357,8 +357,9 @@ jobs:
           echo 'END_OF_TARGETS' >> $GITHUB_OUTPUT
 
           RETRY_DELAY_MS=30000
-          echo "retry_delay_ms=${RETRY_DELAY_MS}"
-          echo "max_wait_ms=" $(( ( ${{ inputs.cross_max_wait_mins }} * 60 * 1000) / ${RETRY_DELAY_MS} ))
+          MAX_WAIT_MS=$(( ( ${{ inputs.cross_max_wait_mins }} * 60 * 1000 ) / ${RETRY_DELAY_MS} ))
+          echo "retry_delay_ms=${RETRY_DELAY_MS}" >> $GITHUB_OUTPUT
+          echo "max_wait_ms=${MAX_WAIT_MS}" >> $GITHUB_OUTPUT
 
       - name: Print rules
         # Disable default use of bash -x for easier to read output in the log
