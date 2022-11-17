@@ -4,10 +4,8 @@ This repository provides configuration and services for the NLnet Labs GitHub ac
 
 In particular it provides:
 
-| Feature | Documentation |
-| --- | --- |
-| [Organization profile README](https://github.com/NLnetLabs) | [GitHub Docs](https://docs.github.com/en/organizations/collaborating-with-groups-in-organizations/customizing-your-organizations-profile#organization-profile-readmes) |
-| [Reusable workflows](.github/workflows/) | [GitHub Docs](https://docs.github.com/en/actions/using-workflows/reusing-workflows) |
-| [Starter workflows](workflow-templates/) | [GitHub Docs](https://docs.github.com/en/actions/using-workflows/using-starter-workflows) |
+| Feature | Documentation | Details |
+| --- | --- | --- |
+| [Organization profile README](https://github.com/NLnetLabs) | [GitHub Docs](https://docs.github.com/en/organizations/collaborating-with-groups-in-organizations/customizing-your-organizations-profile#organization-profile-readmes) | [view](profile/) |
+| [Starter workflows](workflow-templates/) | [GitHub Docs](https://docs.github.com/en/actions/using-workflows/using-starter-workflows) | [view](docs/starter_workflow.md) |
 
-At the time of writing this repository contains the [Ploutos](docs/README.md) reusable workflow for packaging Rust projects, and a starter workflow to make it easier to add Ploutos to existing GitHub projects.
