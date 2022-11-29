@@ -1,6 +1,6 @@
 ## 💚 Hello from NLnet Labs!
 
-Founded in 1999, NLnet Labs is an independent, not-for-profit foundation
+Founded in 1999, NLnet Labs is an independent, non-profit foundation
 based in the Netherlands. Our mission is to make the core of the Internet a
 better, safer place by developing open-source software, through applied
 research and by promoting and contributing to open standards.
