@@ -1,0 +1,44 @@
+name: Rust CI
+on:
+  workflow_call:
+    inputs:
+      rust_msrv:
+        description: The minimum support Rust version for your project, e.g. 1.71.0.
+        required: true
+        type: string
+
+jobs:
+  build_and_test:
+    name: build and test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        rust: ["${{ inputs.rust_msrv }}", stable, beta, nightly]
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Install Rust
+      uses: hecrj/setup-rust-action@v2
+      with:
+        rust-version: ${{ matrix.rust }}
+
+    # We run build and test twice -- once with full features and once without
+    # any features at all -- to make it more likely that everything works.
+
+    # Clippy.
+    #
+    # Only do this once with all features enabled.
+    # Only do Clippy on stable for the moment, due to
+    # clippy::unknown_clippy_lints being removed.
+    - if: matrix.rust == 'nightly'
+      run: rustup component add clippy
+    - if: matrix.rust == 'nightyl'
+      run: cargo clippy --all --all-features -- -D warnings
+
+    # Build
+    - run: cargo build --verbose --all --all-features
+    - run: cargo build --verbose --all
+
+    # Test
+    - run: cargo test --verbose --all --all-features
