@@ -1,0 +1,10 @@
+{
+    "name": "Rust CI Workflow",
+    "description": "Build and test a Rust project with Cargo according to NLnet Labs default practices.",
+    "categories": [
+        "Rust"
+    ],
+    "filePatterns": [
+        "^Cargo.toml$"
+    ]
+}

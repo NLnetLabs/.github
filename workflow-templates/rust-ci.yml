@@ -1,0 +1,10 @@
+name: Rust CI
+description: 
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  test:
+    name: build and test
+    uses: NLnetLabs/.github/.github/workflows/rust-ci.yml@main
+    with:
+      rust_msrv: 1.79
+      test_minimal_versions: true
