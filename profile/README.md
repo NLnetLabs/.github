@@ -39,13 +39,11 @@ new software or a feature for an existing product, or through a
 
 At NLnet Labs, we are [committed](https://www.nlnetlabs.nl/conduct/) to an
 open mindset that encourages anyone to contribute to our software and
-discussions on Internet technology. To exchange ideas you can find us on
-[Mastodon](https://social.nlnetlabs.nl/@nlnetlabs) and we host several [mailing
-lists](https://www.nlnetlabs.nl/support/mailing-lists/). For DNS related
-topics you can also find us on the [DNS-OARC Mattermost
-server](https://www.dns-oarc.net/oarc/services/chat) and for discussions
-related to RPKI we maintain a [Discord
-server](https://discord.gg/8dvKB5Ykhy). You are likely to run into one of us
-in real-life at industry events such as IETF or ICANN meetings, or at
-operator meetings such as RIPE or NANOG. We'd love to discuss ideas and hear
-your feedback!
+discussions on Internet technology. To exchange ideas you can use our 
+[Discourse community forum](https://community.nlnetlabs.nl/), find us on
+[Mastodon](https://social.nlnetlabs.nl/@nlnetlabs) or use one of our [mailing
+lists](https://www.nlnetlabs.nl/support/mailing-lists/). 
+
+You are likely to run into one of us in real-life at industry events such as 
+IETF or ICANN meetings, or at operator meetings such as RIPE, ICANN or 
+DNS-OARC. We'd love to discuss ideas and hear your feedback!
