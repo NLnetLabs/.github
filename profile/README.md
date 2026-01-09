@@ -45,5 +45,5 @@ discussions on Internet technology. To exchange ideas you can use our
 lists](https://www.nlnetlabs.nl/support/mailing-lists/). 
 
 You are likely to run into one of us in real-life at industry events such as 
-IETF or ICANN meetings, or at operator meetings such as RIPE, ICANN or 
+IETF or ICANN meetings, or at operator meetings such as RIPE or 
 DNS-OARC. We'd love to discuss ideas and hear your feedback!
