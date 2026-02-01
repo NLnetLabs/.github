@@ -3,22 +3,33 @@ on:
   workflow_call:
     inputs:
       rust_msrv:
-        description: The minimum support Rust version for your project, e.g. 1.71.0.
+        description: >
+          The minimum support Rust version to test the project with,
+          e.g. 1.71.0.
         required: true
         type: string
-      test_minimal_versions:
-        description: Test using minimal dependency versions from Cargo.toml.
+      test_minimal_version:
+        description: > 
+          If non-empty, test using minimal dependency versions from Cargo.toml
+          and the Rust version provided.
+        required: false
+        type: string
+        default: ""
+      check_fmt:
+        description: Whether to run a cargo fmt check.
         required: false
         type: boolean
         default: false
 jobs:
-  build_and_test:
-    name: build and test
+  build-and-test:
+    name: Build and test
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
         rust: ["${{ inputs.rust_msrv }}", stable, beta, nightly]
+    env:
+        RUSTFLAGS: "-D warnings"
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -27,31 +38,41 @@ jobs:
       with:
         rust-version: ${{ matrix.rust }}
 
-    # We run build and test twice -- once with full features and once without
-    # any features at all -- to make it more likely that everything works.
-
     # Clippy.
     #
     # Only do this once with all features enabled.
     # Only do Clippy on stable for the moment, due to
     # clippy::unknown_clippy_lints being removed.
-    - if: matrix.rust == 'nightly'
-      run: rustup component add clippy
-    - if: matrix.rust == 'nightyl'
+    - if: matrix.rust == 'stable'
+      name: Run Clippy.
       run: cargo clippy --all --all-features -- -D warnings
 
-    # Build
-    - run: cargo build --verbose --all --all-features
-    - run: cargo build --verbose --all
+    # Fmt.
+    - if: inputs.check_fmt && matrix.rust == 'stable' && matrix.os = 'ubuntu-latest'
+      name: Check formatting.
+      run: cargo fmt --all -- --check
 
-    # Test
-    - run: cargo test --verbose --all --all-features
+    # Build & Test
+    - run: cargo test --all --all-features
+    - run: cargo check --no-default-features --all --all-features
 
-      # Test using minimal dependency versions from Cargo.toml
-    - if: inputs.test_minimal_versions && matrix.rust != 'beta' && matrix.rust != 'nightly'
+  minimal-versions:
+    name: Check minimal versions
+    if: inputs.test_minimal_version != ""
+    runs-on: ubuntu-latest
+    env:
+        RUSTFLAGS: "-D warnings"
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Install Rust
+      uses: hecrj/setup-rust-action@v2
+      with:
+        rust-version: "${{ inputs.test_minimal_version }}"
+    - name: Install nightly Rust
+      run: rustup install nightly
+    - name: Check with minimal-versions
       run: |
-        rustup toolchain install nightly
         cargo +nightly update -Z minimal-versions
-        cargo build --verbose --all --all-features
-        cargo test --verbose --all --all-features
-      name: Check and test with minimal-versions
+        cargo check --all-features --all-targets --locked
+
