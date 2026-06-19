@@ -21,7 +21,7 @@ jobs:
         rust: ["${{ inputs.rust_msrv }}", stable, beta, nightly]
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
     - name: Install Rust
       uses: hecrj/setup-rust-action@v2
       with:
