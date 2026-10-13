@@ -1,4 +1,4 @@
-## 💚 Hello from NLnet Labs!
+## 🧡 Hello from NLnet Labs!
 
 Founded in 1999, NLnet Labs is an independent, non-profit foundation
 based in the Netherlands. Our mission is to make the core of the Internet a
